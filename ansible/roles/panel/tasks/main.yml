@@ -1,0 +1,232 @@
+---
+- name: Install panel packages
+  ansible.builtin.apt:
+    name:
+      - nginx
+      - mariadb-server
+      - redis-server
+      - php8.3
+      - php8.3-cli
+      - php8.3-fpm
+      - php8.3-gd
+      - php8.3-mysql
+      - php8.3-mbstring
+      - php8.3-bcmath
+      - php8.3-xml
+      - php8.3-curl
+      - php8.3-zip
+      - php8.3-intl
+      - php8.3-sqlite3
+      - composer
+      - git
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Ensure services running
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - mariadb
+    - redis-server
+    - nginx
+    - php8.3-fpm
+
+- name: Set MariaDB root password
+  community.mysql.mysql_user:
+    name: root
+    password: "{{ mariadb_root_password }}"
+    host_all: true
+    login_unix_socket: /run/mysqld/mysqld.sock
+    state: present
+  no_log: true
+
+- name: Write root .my.cnf
+  ansible.builtin.copy:
+    dest: /root/.my.cnf
+    mode: "0600"
+    content: |
+      [client]
+      user=root
+      password={{ mariadb_root_password }}
+  no_log: true
+
+- name: Create panel database
+  community.mysql.mysql_db:
+    name: "{{ panel_db_name }}"
+    state: present
+
+- name: Create panel DB user
+  community.mysql.mysql_user:
+    name: "{{ panel_db_user }}"
+    password: "{{ panel_db_password }}"
+    host: 127.0.0.1
+    priv: "{{ panel_db_name }}.*:ALL"
+    state: present
+  no_log: true
+
+- name: Create panel install directory
+  ansible.builtin.file:
+    path: "{{ panel_install_dir }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: "0755"
+
+- name: Download and extract panel
+  ansible.builtin.unarchive:
+    src: https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz
+    dest: "{{ panel_install_dir }}"
+    remote_src: true
+    owner: www-data
+    group: www-data
+    creates: "{{ panel_install_dir }}/artisan"
+
+- name: Set storage and cache permissions
+  ansible.builtin.file:
+    path: "{{ panel_install_dir }}/{{ item }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: "0755"
+    recurse: true
+  loop:
+    - storage
+    - bootstrap/cache
+
+- name: Copy .env.example
+  ansible.builtin.copy:
+    src: "{{ panel_install_dir }}/.env.example"
+    dest: "{{ panel_install_dir }}/.env"
+    remote_src: true
+    owner: www-data
+    group: www-data
+    mode: "0640"
+    force: false
+
+- name: Composer install
+  ansible.builtin.command:
+    cmd: composer install --no-dev --optimize-autoloader --no-interaction
+    chdir: "{{ panel_install_dir }}"
+    creates: "{{ panel_install_dir }}/vendor/autoload.php"
+  become_user: www-data
+  environment:
+    COMPOSER_ALLOW_SUPERUSER: "1"
+
+- name: Set APP_KEY in .env
+  ansible.builtin.lineinfile:
+    path: "{{ panel_install_dir }}/.env"
+    regexp: "^APP_KEY="
+    line: "APP_KEY={{ panel_app_key }}"
+  no_log: true
+
+- name: Configure panel environment
+  ansible.builtin.command:
+    cmd: >-
+      php artisan p:environment:setup
+      --author={{ panel_admin_email | quote }}
+      --url=https://{{ panel_domain }}
+      --timezone={{ timezone }}
+      --cache=redis
+      --session=redis
+      --queue=redis
+      --redis-host=127.0.0.1
+      --redis-port=6379
+      --redis-pass=
+      --settings-ui=true
+      --telemetry=false
+      -n
+    chdir: "{{ panel_install_dir }}"
+    creates: "{{ panel_install_dir }}/.env.configured"
+  become_user: www-data
+
+- name: Configure panel database
+  ansible.builtin.command:
+    cmd: >-
+      php artisan p:environment:database
+      --host=127.0.0.1
+      --port=3306
+      --database={{ panel_db_name }}
+      --username={{ panel_db_user }}
+      --password={{ panel_db_password | quote }}
+      -n
+    chdir: "{{ panel_install_dir }}"
+    creates: "{{ panel_install_dir }}/.env.configured"
+  become_user: www-data
+  no_log: true
+
+- name: Run migrations and seed
+  ansible.builtin.command:
+    cmd: php artisan migrate --seed --force
+    chdir: "{{ panel_install_dir }}"
+    creates: "{{ panel_install_dir }}/.env.configured"
+  become_user: www-data
+
+- name: Create admin user
+  ansible.builtin.command:
+    cmd: >-
+      php artisan p:user:make
+      --email={{ panel_admin_email | quote }}
+      --username=admin
+      --name-first=Admin
+      --name-last=User
+      --password={{ panel_admin_password | quote }}
+      --admin=1
+      -n
+    chdir: "{{ panel_install_dir }}"
+    creates: "{{ panel_install_dir }}/.env.configured"
+  become_user: www-data
+  no_log: true
+
+- name: Mark environment configured
+  ansible.builtin.file:
+    path: "{{ panel_install_dir }}/.env.configured"
+    state: touch
+    owner: www-data
+    group: www-data
+    mode: "0644"
+    modification_time: preserve
+    access_time: preserve
+
+- name: Install pteroq queue worker unit
+  ansible.builtin.template:
+    src: pteroq.service.j2
+    dest: /etc/systemd/system/pteroq.service
+    mode: "0644"
+  notify: reload systemd
+
+- name: Enable pteroq
+  ansible.builtin.systemd:
+    name: pteroq
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Install panel cron
+  ansible.builtin.cron:
+    name: pterodactyl schedule
+    user: www-data
+    minute: "*"
+    job: "php {{ panel_install_dir }}/artisan schedule:run >> /dev/null 2>&1"
+
+- name: Install nginx site
+  ansible.builtin.template:
+    src: nginx-panel.conf.j2
+    dest: /etc/nginx/sites-available/pterodactyl.conf
+    mode: "0644"
+  notify: reload nginx
+
+- name: Enable nginx site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/pterodactyl.conf
+    dest: /etc/nginx/sites-enabled/pterodactyl.conf
+    state: link
+  notify: reload nginx
+
+- name: Remove default nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: reload nginx

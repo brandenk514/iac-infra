@@ -1,0 +1,45 @@
+---
+- name: Set system timezone
+  community.general.timezone:
+    name: "{{ timezone }}"
+
+- name: Install base packages
+  ansible.builtin.apt:
+    name:
+      - curl
+      - tar
+      - unzip
+      - ca-certificates
+      - gnupg
+      - ufw
+      - unattended-upgrades
+      - python3-pymysql
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: UFW default deny incoming
+  community.general.ufw:
+    direction: incoming
+    policy: deny
+
+- name: UFW default allow outgoing
+  community.general.ufw:
+    direction: outgoing
+    policy: allow
+
+- name: UFW allow SSH
+  community.general.ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+
+- name: UFW allow Wings SFTP
+  community.general.ufw:
+    rule: allow
+    port: "{{ wings_sftp_port }}"
+    proto: tcp
+
+- name: UFW enable
+  community.general.ufw:
+    state: enabled

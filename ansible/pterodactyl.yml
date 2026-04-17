@@ -1,0 +1,11 @@
+---
+- name: Pterodactyl DMZ host
+  hosts: pterodactyl
+  become: true
+  gather_facts: true
+
+  roles:
+    - common
+    - panel
+    - wings
+    - cloudflared

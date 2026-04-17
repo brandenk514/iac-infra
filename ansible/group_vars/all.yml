@@ -1,0 +1,27 @@
+---
+timezone: America/Los_Angeles
+
+panel_domain: games.uaccloud.com
+node_domain: games-node.uaccloud.com
+
+panel_install_dir: /var/www/pterodactyl
+panel_db_name: panel
+panel_db_user: pterodactyl
+
+wings_bind_port: 8443
+wings_sftp_port: 2022
+wings_cert_dir: /etc/pterodactyl/certs
+
+# Secrets are injected from the Gitea Actions runner env.
+# Never commit values for these.
+mariadb_root_password: "{{ lookup('env', 'MARIADB_ROOT_PASSWORD') }}"
+panel_db_password:     "{{ lookup('env', 'PANEL_DB_PASSWORD') }}"
+panel_app_key:         "{{ lookup('env', 'PANEL_APP_KEY') }}"
+panel_admin_email:     "{{ lookup('env', 'PANEL_ADMIN_EMAIL') }}"
+panel_admin_password:  "{{ lookup('env', 'PANEL_ADMIN_PASSWORD') }}"
+cloudflared_token:     "{{ lookup('env', 'CF_TUNNEL_TOKEN') }}"
+
+# Wings node config YAML, produced by Panel after you create the node in the UI.
+# Store the full file contents as the Gitea secret WINGS_NODE_CONFIG.
+# Left empty on first run; wings service won't start until this is populated.
+wings_node_config: "{{ lookup('env', 'WINGS_NODE_CONFIG') | default('', true) }}"

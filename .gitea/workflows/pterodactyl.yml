@@ -1,0 +1,43 @@
+name: Deploy Pterodactyl
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ansible/**'
+      - '.gitea/workflows/pterodactyl.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    defaults:
+      run:
+        working-directory: ansible
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ansible
+        run: |
+          python3 -m pip install --user --upgrade ansible pymysql
+
+      - name: Install collections
+        run: ansible-galaxy collection install -r requirements.yml
+
+      - name: Write SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H pterodactyl.dmz.uaccloud.com >> ~/.ssh/known_hosts
+
+      - name: Run playbook
+        env:
+          MARIADB_ROOT_PASSWORD: ${{ secrets.MARIADB_ROOT_PASSWORD }}
+          PANEL_DB_PASSWORD: ${{ secrets.PANEL_DB_PASSWORD }}
+          PANEL_APP_KEY: ${{ secrets.PANEL_APP_KEY }}
+          PANEL_ADMIN_EMAIL: ${{ secrets.PANEL_ADMIN_EMAIL }}
+          PANEL_ADMIN_PASSWORD: ${{ secrets.PANEL_ADMIN_PASSWORD }}
+          CF_TUNNEL_TOKEN: ${{ secrets.CF_TUNNEL_TOKEN }}
+          WINGS_NODE_CONFIG: ${{ secrets.WINGS_NODE_CONFIG }}
+        run: ansible-playbook pterodactyl.yml
