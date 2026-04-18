@@ -1,6 +1,0 @@
-all:
-  hosts:
-    pterodactyl:
-      ansible_host: pterodactyl.dmz.uaccloud.com
-      ansible_user: core-ci
-      ansible_python_interpreter: /usr/bin/python3
