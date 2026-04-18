@@ -1,0 +1,20 @@
+---
+- name: Assert Ubuntu
+  ansible.builtin.assert:
+    that: ansible_distribution == "Ubuntu"
+    fail_msg: "baseline role only supports Ubuntu; host is {{ ansible_distribution }}"
+
+- name: Include OS tasks
+  ansible.builtin.import_tasks: os.yml
+
+- name: Include user tasks
+  ansible.builtin.import_tasks: user.yml
+
+- name: Include SSH tasks
+  ansible.builtin.import_tasks: ssh.yml
+
+- name: Include Docker tasks
+  ansible.builtin.import_tasks: docker.yml
+
+- name: Include Tailscale tasks
+  ansible.builtin.import_tasks: tailscale.yml

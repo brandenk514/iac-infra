@@ -1,0 +1,7 @@
+---
+- name: Apply baseline to all homelab hosts
+  hosts: homelab
+  become: true
+  gather_facts: true
+  roles:
+    - baseline

@@ -1,0 +1,45 @@
+---
+- name: Download Tailscale GPG key
+  ansible.builtin.get_url:
+    url: "https://pkgs.tailscale.com/stable/ubuntu/{{ ansible_distribution_release }}.noarmor.gpg"
+    dest: /etc/apt/keyrings/tailscale-archive-keyring.gpg
+    owner: root
+    group: root
+    mode: "0644"
+    force: false
+
+- name: Add Tailscale apt repository
+  ansible.builtin.get_url:
+    url: "https://pkgs.tailscale.com/stable/ubuntu/{{ ansible_distribution_release }}.tailscale-keyring.list"
+    dest: /etc/apt/sources.list.d/tailscale.list
+    owner: root
+    group: root
+    mode: "0644"
+    force: false
+
+- name: Install Tailscale
+  ansible.builtin.apt:
+    name: tailscale
+    state: present
+    update_cache: true
+
+- name: Enable tailscaled
+  ansible.builtin.service:
+    name: tailscaled
+    state: started
+    enabled: true
+
+- name: Check Tailscale status
+  ansible.builtin.command: tailscale status --json
+  register: baseline_ts_status
+  changed_when: false
+  failed_when: false
+
+- name: Bring Tailscale up
+  ansible.builtin.command: >-
+    tailscale up --authkey={{ tailscale_authkey }} {{ tailscale_up_args }}
+  when:
+    - tailscale_authkey | length > 0
+    - (baseline_ts_status.stdout | from_json).BackendState | default('') != 'Running'
+  changed_when: true
+  no_log: true

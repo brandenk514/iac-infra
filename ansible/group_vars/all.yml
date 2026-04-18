@@ -1,0 +1,20 @@
+---
+# Admin user created by baseline role.
+admin_user: ops
+admin_authorized_keys: []  # list of SSH public keys; leave empty to skip user creation
+
+# SSH hardening.
+ssh_port: 22
+ssh_permit_root_login: "no"
+ssh_password_authentication: "no"
+
+# System.
+timezone: UTC
+
+# Tailscale — store authkey via ansible-vault or pass with `-e tailscale_authkey=...`.
+# If unset, tailscale is installed but not brought up.
+tailscale_authkey: ""
+tailscale_up_args: "--ssh"
+
+# Update role — reboot timeout in seconds when a kernel update triggers a reboot.
+update_reboot_timeout: 600

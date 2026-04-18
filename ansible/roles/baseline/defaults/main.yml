@@ -1,0 +1,13 @@
+---
+baseline_packages:
+  - ca-certificates
+  - curl
+  - gnupg
+  - htop
+  - btop
+  - vim
+  - git
+  - fail2ban
+  - unattended-upgrades
+  - apt-listchanges
+  - chrony

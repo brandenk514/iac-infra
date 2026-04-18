@@ -1,0 +1,8 @@
+---
+- name: Update and conditionally reboot homelab hosts
+  hosts: homelab
+  become: true
+  gather_facts: true
+  serial: 1
+  roles:
+    - update

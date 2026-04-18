@@ -1,0 +1,51 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 0
+
+- name: Dist-upgrade all packages
+  ansible.builtin.apt:
+    upgrade: dist
+    autoremove: true
+
+- name: Autoclean apt
+  ansible.builtin.apt:
+    autoclean: true
+
+- name: Stat /var/run/reboot-required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: update_reboot_required
+
+- name: Read reboot-required.pkgs
+  ansible.builtin.slurp:
+    src: /var/run/reboot-required.pkgs
+  register: update_reboot_pkgs_raw
+  when: update_reboot_required.stat.exists
+
+- name: Determine whether a kernel update triggered the reboot flag
+  ansible.builtin.set_fact:
+    update_kernel_reboot_needed: >-
+      {{
+        update_reboot_required.stat.exists
+        and (update_reboot_pkgs_raw.content | b64decode).splitlines()
+            | select('match', '^linux-image-')
+            | list | length > 0
+      }}
+
+- name: Reboot host (kernel update applied)
+  ansible.builtin.reboot:
+    msg: "Ansible update role — rebooting for kernel update"
+    reboot_timeout: "{{ update_reboot_timeout }}"
+  when: update_kernel_reboot_needed | bool
+
+- name: Report reboot-required without kernel update (skipped)
+  ansible.builtin.debug:
+    msg: >-
+      Reboot flag is set but no kernel package changed
+      ({{ (update_reboot_pkgs_raw.content | b64decode).splitlines() | join(', ') }}).
+      Skipping reboot per policy.
+  when:
+    - update_reboot_required.stat.exists
+    - not (update_kernel_reboot_needed | bool)
