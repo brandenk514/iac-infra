@@ -1,4 +1,7 @@
 ---
+# Admin user created by baseline role.
+admin_user: core-ci
+
 # SSH hardening.
 ssh_port: 22
 ssh_permit_root_login: "no"

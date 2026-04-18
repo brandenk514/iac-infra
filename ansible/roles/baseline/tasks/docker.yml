@@ -47,4 +47,3 @@
     name: "{{ admin_user }}"
     groups: docker
     append: true
-  when: admin_authorized_keys | length > 0
