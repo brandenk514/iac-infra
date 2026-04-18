@@ -1,0 +1,124 @@
+name: terraform-deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform-deploy.yml'
+  workflow_dispatch:
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform/main
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.TF_SSH_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          cat > ~/.ssh/config <<'EOF'
+          Host *
+              StrictHostKeyChecking no
+              UserKnownHostsFile /dev/null
+              LogLevel ERROR
+          EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Write tfvars
+        env:
+          TFVARS: ${{ secrets.TF_TFVARS_MAIN }}
+        run: printf '%s' "$TFVARS" > terraform.tfvars
+
+      - name: Terraform init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.B2_BUCKET }}" \
+            -backend-config="key=main/terraform.tfstate" \
+            -backend-config="region=${{ secrets.B2_REGION }}" \
+            -backend-config="endpoints={ s3 = \"https://s3.${{ secrets.B2_REGION }}.backblazeb2.com\" }" \
+            -backend-config="use_lockfile=true" \
+            -backend-config="skip_credentials_validation=true" \
+            -backend-config="skip_metadata_api_check=true" \
+            -backend-config="skip_region_validation=true" \
+            -backend-config="skip_requesting_account_id=true" \
+            -backend-config="skip_s3_checksum=true" \
+            -backend-config="use_path_style=true"
+
+      - name: Terraform apply
+        run: terraform apply -auto-approve -input=false
+
+  tdarr:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform/tdarr
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.TF_SSH_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          cat > ~/.ssh/config <<'EOF'
+          Host *
+              StrictHostKeyChecking no
+              UserKnownHostsFile /dev/null
+              LogLevel ERROR
+          EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Write tfvars
+        env:
+          TFVARS: ${{ secrets.TF_TFVARS_TDARR }}
+        run: printf '%s' "$TFVARS" > terraform.tfvars
+
+      - name: Terraform init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.B2_BUCKET }}" \
+            -backend-config="key=tdarr/terraform.tfstate" \
+            -backend-config="region=${{ secrets.B2_REGION }}" \
+            -backend-config="endpoints={ s3 = \"https://s3.${{ secrets.B2_REGION }}.backblazeb2.com\" }" \
+            -backend-config="use_lockfile=true" \
+            -backend-config="skip_credentials_validation=true" \
+            -backend-config="skip_metadata_api_check=true" \
+            -backend-config="skip_region_validation=true" \
+            -backend-config="skip_requesting_account_id=true" \
+            -backend-config="skip_s3_checksum=true" \
+            -backend-config="use_path_style=true"
+
+      - name: Terraform apply
+        run: terraform apply -auto-approve -input=false
