@@ -1,4 +1,6 @@
 ---
+timezone: America/Denver
+
 baseline_packages:
   - ca-certificates
   - curl
