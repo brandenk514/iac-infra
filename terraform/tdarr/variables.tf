@@ -61,3 +61,24 @@ variable "media_library_mnt" {
   type        = string
   default     = ":/mnt/backup_pool/media-backup-pool"
 }
+
+# ---------------------------------------------------------------------------
+# Beszel Agent
+# ---------------------------------------------------------------------------
+variable "beszel_agent_hub_url" {
+  description = "Beszel hub URL for the agent"
+  type        = string
+  default     = "https://monitor.local.uaccloud.com"
+}
+
+variable "beszel_agent_key" {
+  description = "SSH public key for Beszel agent auth"
+  type        = string
+  sensitive   = true
+}
+
+variable "beszel_agent_token" {
+  description = "Auth token for Beszel agent"
+  type        = string
+  sensitive   = true
+}
