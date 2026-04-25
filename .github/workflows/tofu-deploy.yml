@@ -112,7 +112,6 @@ jobs:
             -backend-config="key=tdarr/terraform.tfstate" \
             -backend-config="region=${{ secrets.B2_REGION }}" \
             -backend-config="endpoints={ s3 = \"https://s3.${{ secrets.B2_REGION }}.backblazeb2.com\" }" \
-            -backend-config="use_lockfile=true" \
             -backend-config="skip_credentials_validation=true" \
             -backend-config="skip_metadata_api_check=true" \
             -backend-config="skip_region_validation=true" \
