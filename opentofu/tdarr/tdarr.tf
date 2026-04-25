@@ -6,9 +6,10 @@ resource "docker_image" "tdarr" {
 }
 
 resource "docker_container" "tdarr" {
-  name    = "tdarr"
-  image   = docker_image.tdarr.image_id
-  restart = "unless-stopped"
+  name     = "tdarr"
+  image    = docker_image.tdarr.image_id
+  restart  = "unless-stopped"
+  hostname = "tdarr"
 
   networks_advanced {
     name    = docker_network.tdarr.id
@@ -69,9 +70,10 @@ resource "docker_image" "tdarr_node" {
 }
 
 resource "docker_container" "tdarr_node" {
-  name    = "tdarr-node"
-  image   = docker_image.tdarr_node.image_id
-  restart = "unless-stopped"
+  name     = "tdarr-node"
+  image    = docker_image.tdarr_node.image_id
+  restart  = "unless-stopped"
+  hostname = "tdarr-node"
 
   networks_advanced {
     name    = docker_network.tdarr.id
