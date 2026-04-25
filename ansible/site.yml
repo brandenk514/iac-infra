@@ -9,7 +9,7 @@
   tags: [baseline]
 
 - name: Render Traefik configuration on docker hosts
-  hosts: homelab
+  hosts: traefik
   become: true
   gather_facts: false
   roles:
