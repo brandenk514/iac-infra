@@ -1,7 +1,7 @@
 ---
 - name: Set timezone
   community.general.timezone:
-    name: "{{ timezone }}"
+    name: "{{ baseline_timezone }}"
 
 - name: Install baseline packages
   ansible.builtin.apt:
