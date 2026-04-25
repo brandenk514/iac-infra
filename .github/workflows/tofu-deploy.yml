@@ -1,11 +1,11 @@
-name: terraform-deploy
+name: tofu-deploy
 
 on:
   push:
     branches: [main]
     paths:
       - 'terraform/**'
-      - '.github/workflows/terraform-deploy.yml'
+      - '.github/workflows/tofu-deploy.yml'
   workflow_dispatch:
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
 
-      - uses: hashicorp/setup-terraform@v3
+      - uses: opentofu/setup-opentofu@v1
 
       - name: Configure SSH
         env:
@@ -48,9 +48,9 @@ jobs:
           TFVARS: ${{ secrets.TF_TFVARS_MAIN }}
         run: printf '%s' "$TFVARS" > terraform.tfvars
 
-      - name: Terraform init
+      - name: Tofu init
         run: |
-          terraform init \
+          tofu init \
             -backend-config="bucket=${{ secrets.B2_BUCKET }}" \
             -backend-config="key=main/terraform.tfstate" \
             -backend-config="region=${{ secrets.B2_REGION }}" \
@@ -63,8 +63,8 @@ jobs:
             -backend-config="skip_s3_checksum=true" \
             -backend-config="use_path_style=true"
 
-      - name: Terraform apply
-        run: terraform apply -auto-approve -input=false
+      - name: Tofu apply
+        run: tofu apply -auto-approve -input=false
 
   tdarr:
     runs-on: ubuntu-latest
@@ -83,7 +83,7 @@ jobs:
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
 
-      - uses: hashicorp/setup-terraform@v3
+      - uses: opentofu/setup-opentofu@v1
 
       - name: Configure SSH
         env:
@@ -105,9 +105,9 @@ jobs:
           TFVARS: ${{ secrets.TF_TFVARS_TDARR }}
         run: printf '%s' "$TFVARS" > terraform.tfvars
 
-      - name: Terraform init
+      - name: Tofu init
         run: |
-          terraform init \
+          tofu init \
             -backend-config="bucket=${{ secrets.B2_BUCKET }}" \
             -backend-config="key=tdarr/terraform.tfstate" \
             -backend-config="region=${{ secrets.B2_REGION }}" \
@@ -120,5 +120,5 @@ jobs:
             -backend-config="skip_s3_checksum=true" \
             -backend-config="use_path_style=true"
 
-      - name: Terraform apply
-        run: terraform apply -auto-approve -input=false
+      - name: Tofu apply
+        run: tofu apply -auto-approve -input=false
