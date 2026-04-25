@@ -88,6 +88,8 @@ jobs:
           tags: tag:ci
 
       - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
 
       - name: Configure SSH
         env:
@@ -124,4 +126,6 @@ jobs:
             -backend-config="use_path_style=true"
 
       - name: Tofu apply
-        run: tofu apply -auto-approve -input=false
+        env:
+          TF_LOG: DEBUG
+        run: tofu apply -auto-approve -input=false 2>&1 | tail -500
