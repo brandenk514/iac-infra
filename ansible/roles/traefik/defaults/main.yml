@@ -1,0 +1,57 @@
+---
+# Host paths — must match the OpenTofu `docker_mnt` variable.
+traefik_docker_mnt: /mnt/r5-dstor/containers
+traefik_conf_dir: "{{ traefik_docker_mnt }}/traefik/confs"
+traefik_certs_dir: "{{ traefik_docker_mnt }}/traefik/certs"
+
+# Container name used by handler to restart on config change.
+traefik_container_name: traefik
+
+# Docker provider network.
+traefik_docker_network: frontend
+
+# ACME / Cloudflare. The CF_DNS_API_TOKEN env var is injected into the
+# container by OpenTofu — it is NOT rendered into traefik.yml.
+traefik_acme_email: brandenk514@gmail.com
+traefik_acme_storage: /var/traefik/certs/cloudflare-acme.json
+traefik_acme_ca_server: "https://acme-v02.api.letsencrypt.org/directory"
+traefik_dns_resolvers:
+  - 1.1.1.1:53
+  - 1.0.0.1:53
+  - 8.8.8.8:53
+
+# Cert domains — used for the wildcard cert request.
+traefik_cert_domains:
+  - main: uaccloud.com
+    sans:
+      - "*.uaccloud.com"
+  - main: local.uaccloud.com
+    sans:
+      - "*.local.uaccloud.com"
+
+# Entrypoints.
+traefik_entrypoints:
+  web:
+    address: ":80"
+    http_redirect_to: websecure
+  websecure:
+    address: ":443"
+    transport:
+      respondingTimeouts:
+        readTimeout: 600s
+        idleTimeout: 600s
+        writeTimeout: 600s
+  external-web:
+    address: ":8080"
+    http_redirect_to: external-websecure
+  external-websecure:
+    address: ":42069"
+    transport:
+      respondingTimeouts:
+        readTimeout: 600s
+        idleTimeout: 600s
+        writeTimeout: 600s
+
+traefik_log_level: DEBUG
+traefik_dashboard_insecure: false
+traefik_access_log_format: json

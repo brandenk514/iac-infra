@@ -4,4 +4,15 @@
   become: true
   gather_facts: true
   roles:
-    - baseline
+    - role: baseline
+      tags: [baseline]
+  tags: [baseline]
+
+- name: Render Traefik configuration on docker hosts
+  hosts: homelab
+  become: true
+  gather_facts: false
+  roles:
+    - role: traefik
+      tags: [traefik]
+  tags: [traefik]

@@ -1,0 +1,5 @@
+---
+- name: Restart traefik
+  ansible.builtin.command: docker restart {{ traefik_container_name }}
+  changed_when: true
+  failed_when: false

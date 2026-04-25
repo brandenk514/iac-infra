@@ -1,0 +1,67 @@
+## Managed by Ansible — edit roles/traefik/templates/traefik.yml.j2
+
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+log:
+  level: {{ traefik_log_level }}
+
+accessLog:
+  format: "{{ traefik_access_log_format }}"
+
+metrics:
+  addInternals: true
+  otlp: {}
+
+tracing:
+  addInternals: true
+
+api:
+  dashboard: true
+  insecure: {{ traefik_dashboard_insecure | string | lower }}
+
+entryPoints:
+{% for name, ep in traefik_entrypoints.items() %}
+  {{ name }}:
+    address: "{{ ep.address }}"
+{% if ep.http_redirect_to is defined %}
+    http:
+      redirections:
+        entryPoint:
+          to: {{ ep.http_redirect_to }}
+          scheme: https
+{% endif %}
+{% if ep.transport is defined %}
+    transport:
+      respondingTimeouts:
+        readTimeout: {{ ep.transport.respondingTimeouts.readTimeout }}
+        idleTimeout: {{ ep.transport.respondingTimeouts.idleTimeout }}
+        writeTimeout: {{ ep.transport.respondingTimeouts.writeTimeout }}
+{% endif %}
+{% endfor %}
+
+certificatesResolvers:
+  cloudflare:
+    acme:
+      email: {{ traefik_acme_email }}
+      storage: {{ traefik_acme_storage }}
+      caServer: "{{ traefik_acme_ca_server }}"
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+{% for r in traefik_dns_resolvers %}
+          - "{{ r }}"
+{% endfor %}
+
+serversTransport:
+  insecureSkipVerify: true
+
+providers:
+  docker:
+    endpoint: "unix:///run/docker.sock"
+    exposedByDefault: false
+    network: {{ traefik_docker_network }}
+  file:
+    filename: /config.yml
+    watch: true
