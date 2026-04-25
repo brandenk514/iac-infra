@@ -13,7 +13,7 @@ jobs:
   #   runs-on: ubuntu-latest
   #   defaults:
   #     run:
-  #       working-directory: terraform/main
+  #       working-directory: opentofu/main
   #   env:
   #     AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
   #     AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: terraform/tdarr
+        working-directory: opentofu/tdarr
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
