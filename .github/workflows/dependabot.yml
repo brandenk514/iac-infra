@@ -14,8 +14,7 @@ updates:
   - package-ecosystem: "docker"
     directory: "/"
     multi-ecosystem-group: "infrastructure"
-    
-updates:
+
   - package-ecosystem: "docker-compose"
     directory: "/"
     multi-ecosystem-group: "infrastructure"
