@@ -1,5 +1,5 @@
 ---
-timezone: America/Denver
+baseline_timezone: America/Denver
 
 baseline_packages:
   - ca-certificates
