@@ -17,6 +17,8 @@ jobs:
   #   env:
   #     AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
   #     AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+  #     AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+  #     AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
   #   steps:
   #     - uses: actions/checkout@v4
 
@@ -74,6 +76,8 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
     steps:
       - uses: actions/checkout@v4
 
