@@ -9,11 +9,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  # main:
+  # trex:
   #   runs-on: ubuntu-latest
   #   defaults:
   #     run:
-  #       working-directory: opentofu/main
+  #       working-directory: opentofu/trex
   #   env:
   #     AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
   #     AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
@@ -68,11 +68,13 @@ jobs:
   #     - name: Tofu apply
   #       run: tofu apply -auto-approve -input=false
 
-  tdarr:
+  nanosaurus:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: opentofu/tdarr
+        # Folder renamed tdarr → nanosaurus. Backend key and TF_TFVARS_TDARR
+        # secret kept as-is to avoid orphaning B2 state / breaking the secret ref.
+        working-directory: opentofu/nanosaurus
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}

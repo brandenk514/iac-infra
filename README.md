@@ -8,8 +8,8 @@ Homelab infrastructure as code. Terraform for containerized stacks over SSH; Ans
 
 Uses the [kreuzwerker/docker](https://registry.terraform.io/providers/kreuzwerker/docker/latest) provider over SSH.
 
-- [`terraform/main/`](terraform/main/) — primary server: Traefik, media (Sonarr/Radarr/Lidarr/Prowlarr/Jellyfin/Jellyseerr), Immich, monitoring (Beszel/Dozzle), AI (Ollama/Open WebUI), and supporting services.
-- [`terraform/tdarr/`](terraform/tdarr/) — dedicated Tdarr transcode server with Intel A310 QSV hardware acceleration.
+- [`opentofu/trex/`](opentofu/trex/) — primary server: Traefik, media (Sonarr/Radarr/Lidarr/Prowlarr/Jellyfin/Jellyseerr), Immich, monitoring (Beszel/Dozzle), AI (Ollama/Open WebUI), and supporting services.
+- [`opentofu/nanosaurus/`](opentofu/nanosaurus/) — dedicated Tdarr transcode server with Intel A310 QSV hardware acceleration.
 
 ### Ansible
 
@@ -37,9 +37,9 @@ Monthly patching runs on a schedule via GitHub Actions — see [.github/workflow
 ## Layout
 
 ```
-terraform/
-├── main/           # primary homelab server
-└── tdarr/          # dedicated transcode server
+opentofu/
+├── trex/           # primary homelab server
+└── nanosaurus/     # dedicated transcode server
 ansible/            # host-level config (baseline + update roles)
 .github/workflows/  # terraform deploy + scheduled monthly patching
 ```
