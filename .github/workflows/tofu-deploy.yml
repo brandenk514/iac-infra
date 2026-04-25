@@ -126,6 +126,57 @@ jobs:
             -backend-config="use_path_style=true"
 
       - name: Tofu apply
-        env:
-          TF_LOG: DEBUG
-        run: tofu apply -auto-approve -input=false 2>&1 | tail -500
+        run: tofu apply -auto-approve -input=false
+
+  debug-b2:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+    steps:
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
+
+      - name: AWS CLI put-object probe
+        run: |
+          echo "probe $(date -u +%FT%TZ)" > /tmp/probe.txt
+          aws s3api put-object \
+            --bucket "${{ secrets.B2_BUCKET }}" \
+            --key "debug/probe.txt" \
+            --body /tmp/probe.txt \
+            --endpoint-url "https://s3.${{ secrets.B2_REGION }}.backblazeb2.com" \
+            --debug 2>&1 | tee /tmp/aws-debug.log || true
+
+      - name: Tofu state push probe
+        run: |
+          mkdir -p /tmp/tofu-debug && cd /tmp/tofu-debug
+          cat > main.tf <<'EOF'
+          terraform { backend "s3" {} }
+          EOF
+          tofu init \
+            -backend-config="bucket=${{ secrets.B2_BUCKET }}" \
+            -backend-config="key=debug/terraform.tfstate" \
+            -backend-config="region=${{ secrets.B2_REGION }}" \
+            -backend-config="endpoints={ s3 = \"https://s3.${{ secrets.B2_REGION }}.backblazeb2.com\" }" \
+            -backend-config="skip_credentials_validation=true" \
+            -backend-config="skip_metadata_api_check=true" \
+            -backend-config="skip_region_validation=true" \
+            -backend-config="skip_requesting_account_id=true" \
+            -backend-config="skip_s3_checksum=true" \
+            -backend-config="use_path_style=true"
+          cat > seed.tfstate <<'EOF'
+          {"version":4,"terraform_version":"1.11.6","serial":1,"lineage":"debug-probe","outputs":{},"resources":[],"check_results":null}
+          EOF
+          TF_LOG=DEBUG TF_LOG_PATH=/tmp/tofu-debug.log tofu state push -force seed.tfstate || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: b2-debug-logs
+          path: |
+            /tmp/aws-debug.log
+            /tmp/tofu-debug.log
