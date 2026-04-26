@@ -47,7 +47,7 @@ jobs:
           chmod 600 ~/.ssh/config
       - name: Write tfvars
         env:
-          TFVARS: ${{ secrets.TF_TFVARS_MAIN }}
+          TFVARS: ${{ secrets.TF_TFVARS_TREX }}
         run: printf '%s' "$TFVARS" > terraform.tfvars
       - name: Tofu init
         run: |
@@ -114,7 +114,7 @@ jobs:
           chmod 600 ~/.ssh/config
       - name: Write tfvars
         env:
-          TFVARS: ${{ secrets.TF_TFVARS_MAIN }}
+          TFVARS: ${{ secrets.TF_TFVARS_TREX }}
         run: printf '%s' "$TFVARS" > terraform.tfvars
       - name: Tofu init
         run: |
