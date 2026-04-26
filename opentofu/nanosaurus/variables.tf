@@ -32,7 +32,7 @@ variable "docker_mnt" {
 variable "timezone" {
   description = "Timezone for containers"
   type        = string
-  default     = "America/Los_Angeles"
+  default     = "America/Denver"
 }
 
 variable "puid" {

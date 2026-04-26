@@ -38,7 +38,7 @@ variable "tovpn_mnt" {
 variable "timezone" {
   description = "Timezone for containers"
   type        = string
-  default     = "America/Los_Angeles"
+  default     = "America/Denver"
 }
 
 variable "puid" {
@@ -89,7 +89,6 @@ variable "openvpn_password" {
 variable "immich_version" {
   description = "Immich image tag"
   type        = string
-  default     = "v2.7.4"
 }
 
 variable "db_password" {
