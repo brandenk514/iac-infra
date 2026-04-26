@@ -135,7 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        # Folder renamed tdarr → nanosaurus. Backend key and TF_TFVARS_TDARR
+        # Folder renamed tdarr → nanosaurus. Backend key and TF_TFVARS_NANO
         # secret kept as-is to avoid orphaning B2 state / breaking the secret ref.
         working-directory: opentofu/nanosaurus
     env:
@@ -171,7 +171,7 @@ jobs:
 
       - name: Write tfvars
         env:
-          TFVARS: ${{ secrets.TF_TFVARS_TDARR }}
+          TFVARS: ${{ secrets.TF_TFVARS_NANO }}
         run: printf '%s' "$TFVARS" > terraform.tfvars
 
       - name: Tofu init
@@ -245,7 +245,7 @@ jobs:
 
       - name: Write tfvars
         env:
-          TFVARS: ${{ secrets.TF_TFVARS_TDARR }}
+          TFVARS: ${{ secrets.TF_TFVARS_NANO }}
         run: printf '%s' "$TFVARS" > terraform.tfvars
 
       - name: Tofu init
