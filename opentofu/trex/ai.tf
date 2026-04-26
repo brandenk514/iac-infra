@@ -9,7 +9,11 @@ resource "docker_container" "ollama" {
   name    = "ollama"
   image   = docker_image.ollama.image_id
   restart = "unless-stopped"
-  gpus    = "1"
+
+  device_requests {
+    driver     = "cdi"
+    device_ids = ["nvidia.com/gpu=all"]
+  }
 
   networks_advanced {
     name    = docker_network.proxy.id
@@ -53,7 +57,11 @@ resource "docker_container" "openwebui" {
   name    = "openwebui"
   image   = docker_image.openwebui.image_id
   restart = "unless-stopped"
-  gpus    = "1"
+
+  device_requests {
+    driver     = "cdi"
+    device_ids = ["nvidia.com/gpu=all"]
+  }
 
   networks_advanced {
     name    = docker_network.proxy.id

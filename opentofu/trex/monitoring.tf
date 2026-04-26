@@ -96,7 +96,11 @@ resource "docker_container" "beszel_agent" {
   image        = docker_image.beszel_agent.image_id
   restart      = "unless-stopped"
   network_mode = "host"
-  gpus         = "all"
+
+  device_requests {
+    driver     = "cdi"
+    device_ids = ["nvidia.com/gpu=all"]
+  }
 
   volumes {
     host_path      = "${var.docker_mnt}/beszel_agent_data"

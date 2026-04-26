@@ -9,7 +9,11 @@ resource "docker_container" "immich_server" {
   name    = "immich_server"
   image   = docker_image.immich_server.image_id
   restart = "unless-stopped"
-  gpus    = "1"
+
+  device_requests {
+    driver     = "cdi"
+    device_ids = ["nvidia.com/gpu=all"]
+  }
 
   networks_advanced {
     name = docker_network.proxy.id
@@ -73,7 +77,11 @@ resource "docker_container" "immich_ml" {
   name    = "immich_machine_learning"
   image   = docker_image.immich_ml.image_id
   restart = "unless-stopped"
-  gpus    = "1"
+
+  device_requests {
+    driver     = "cdi"
+    device_ids = ["nvidia.com/gpu=all"]
+  }
 
   networks_advanced {
     name = docker_network.immich.id

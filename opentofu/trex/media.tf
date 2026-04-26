@@ -270,7 +270,11 @@ resource "docker_container" "jellyfin" {
   name    = "jellyfin"
   image   = docker_image.jellyfin.image_id
   restart = "unless-stopped"
-  gpus    = "1"
+
+  device_requests {
+    driver     = "cdi"
+    device_ids = ["nvidia.com/gpu=all"]
+  }
 
   networks_advanced {
     name    = docker_network.proxy.id
