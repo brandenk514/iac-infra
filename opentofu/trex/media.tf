@@ -28,12 +28,12 @@ resource "docker_container" "prowlarr" {
 
   dynamic "labels" {
     for_each = {
-      "traefik.enable"                                    = "true"
-      "traefik.http.routers.prowlarr.rule"                = "Host(`prowlarr.local.uaccloud.com`)"
-      "traefik.http.routers.prowlarr.entrypoints"         = "websecure"
+      "traefik.enable"                                          = "true"
+      "traefik.http.routers.prowlarr.rule"                      = "Host(`prowlarr.local.uaccloud.com`)"
+      "traefik.http.routers.prowlarr.entrypoints"               = "websecure"
       "traefik.http.services.prowlarr.loadbalancer.server.port" = "9696"
-      "traefik.http.routers.prowlarr.tls"                 = "true"
-      "traefik.http.routers.prowlarr.tls.certresolver"    = "cloudflare"
+      "traefik.http.routers.prowlarr.tls"                       = "true"
+      "traefik.http.routers.prowlarr.tls.certresolver"          = "cloudflare"
     }
     content {
       label = labels.key
@@ -80,12 +80,12 @@ resource "docker_container" "sonarr" {
 
   dynamic "labels" {
     for_each = {
-      "traefik.enable"                                   = "true"
-      "traefik.http.routers.sonarr.rule"                 = "Host(`sonarr.local.uaccloud.com`)"
-      "traefik.http.routers.sonarr.entrypoints"          = "websecure"
+      "traefik.enable"                                        = "true"
+      "traefik.http.routers.sonarr.rule"                      = "Host(`sonarr.local.uaccloud.com`)"
+      "traefik.http.routers.sonarr.entrypoints"               = "websecure"
       "traefik.http.services.sonarr.loadbalancer.server.port" = "8989"
-      "traefik.http.routers.sonarr.tls"                  = "true"
-      "traefik.http.routers.sonarr.tls.certresolver"     = "cloudflare"
+      "traefik.http.routers.sonarr.tls"                       = "true"
+      "traefik.http.routers.sonarr.tls.certresolver"          = "cloudflare"
     }
     content {
       label = labels.key
@@ -132,12 +132,12 @@ resource "docker_container" "radarr" {
 
   dynamic "labels" {
     for_each = {
-      "traefik.enable"                                    = "true"
-      "traefik.http.routers.radarr.rule"                  = "Host(`radarr.local.uaccloud.com`)"
-      "traefik.http.routers.radarr.entrypoints"           = "websecure"
+      "traefik.enable"                                        = "true"
+      "traefik.http.routers.radarr.rule"                      = "Host(`radarr.local.uaccloud.com`)"
+      "traefik.http.routers.radarr.entrypoints"               = "websecure"
       "traefik.http.services.radarr.loadbalancer.server.port" = "7878"
-      "traefik.http.routers.radarr.tls"                   = "true"
-      "traefik.http.routers.radarr.tls.certresolver"      = "cloudflare"
+      "traefik.http.routers.radarr.tls"                       = "true"
+      "traefik.http.routers.radarr.tls.certresolver"          = "cloudflare"
     }
     content {
       label = labels.key
@@ -184,12 +184,12 @@ resource "docker_container" "lidarr" {
 
   dynamic "labels" {
     for_each = {
-      "traefik.enable"                                    = "true"
-      "traefik.http.routers.lidarr.rule"                  = "Host(`lidarr.local.uaccloud.com`)"
-      "traefik.http.routers.lidarr.entrypoints"           = "websecure"
+      "traefik.enable"                                        = "true"
+      "traefik.http.routers.lidarr.rule"                      = "Host(`lidarr.local.uaccloud.com`)"
+      "traefik.http.routers.lidarr.entrypoints"               = "websecure"
       "traefik.http.services.lidarr.loadbalancer.server.port" = "8686"
-      "traefik.http.routers.lidarr.tls"                   = "true"
-      "traefik.http.routers.lidarr.tls.certresolver"      = "cloudflare"
+      "traefik.http.routers.lidarr.tls"                       = "true"
+      "traefik.http.routers.lidarr.tls.certresolver"          = "cloudflare"
     }
     content {
       label = labels.key
@@ -245,12 +245,12 @@ resource "docker_container" "tovpn" {
 
   dynamic "labels" {
     for_each = {
-      "traefik.enable"                                    = "true"
-      "traefik.http.routers.tovpn.rule"                   = "Host(`tovpn.local.uaccloud.com`)"
-      "traefik.http.routers.tovpn.entrypoints"            = "websecure"
+      "traefik.enable"                                       = "true"
+      "traefik.http.routers.tovpn.rule"                      = "Host(`tovpn.local.uaccloud.com`)"
+      "traefik.http.routers.tovpn.entrypoints"               = "websecure"
       "traefik.http.services.tovpn.loadbalancer.server.port" = "9091"
-      "traefik.http.routers.tovpn.tls"                    = "true"
-      "traefik.http.routers.tovpn.tls.certresolver"       = "cloudflare"
+      "traefik.http.routers.tovpn.tls"                       = "true"
+      "traefik.http.routers.tovpn.tls.certresolver"          = "cloudflare"
     }
     content {
       label = labels.key
@@ -295,22 +295,22 @@ resource "docker_container" "jellyfin" {
     container_path = "/config"
   }
   volumes {
-    host_path      = "${var.docker_mnt}/jellyfin/tvseries"
+    volume_name    = docker_volume.media_library_nfs.name
     container_path = "/data/tvshows"
   }
   volumes {
-    host_path      = "${var.docker_mnt}/jellyfin/movies"
+    volume_name    = docker_volume.media_library_nfs.name
     container_path = "/data/movies"
   }
 
   dynamic "labels" {
     for_each = {
-      "traefik.enable"                                      = "true"
-      "traefik.http.routers.jellyfin.rule"                  = "Host(`flix.uaccloud.com`)"
+      "traefik.enable"                                          = "true"
+      "traefik.http.routers.jellyfin.rule"                      = "Host(`flix.uaccloud.com`)"
       "traefik.http.services.jellyfin.loadbalancer.server.port" = "8096"
-      "traefik.http.routers.jellyfin.tls"                   = "true"
-      "traefik.http.routers.jellyfin.tls.certresolver"      = "cloudflare"
-      "traefik.http.routers.jellyfin.entrypoints"           = "external-websecure"
+      "traefik.http.routers.jellyfin.tls"                       = "true"
+      "traefik.http.routers.jellyfin.tls.certresolver"          = "cloudflare"
+      "traefik.http.routers.jellyfin.entrypoints"               = "external-websecure"
     }
     content {
       label = labels.key
@@ -348,13 +348,13 @@ resource "docker_container" "jellyseerr" {
 
   dynamic "labels" {
     for_each = {
-      "traefik.enable"                                          = "true"
-      "traefik.docker.network"                                  = "proxy"
-      "traefik.http.routers.jellyseerr.rule"                    = "Host(`request.uaccloud.com`)"
+      "traefik.enable"                                            = "true"
+      "traefik.docker.network"                                    = "proxy"
+      "traefik.http.routers.jellyseerr.rule"                      = "Host(`request.uaccloud.com`)"
       "traefik.http.services.jellyseerr.loadbalancer.server.port" = "5055"
-      "traefik.http.routers.jellyseerr.tls"                     = "true"
-      "traefik.http.routers.jellyseerr.tls.certresolver"        = "cloudflare"
-      "traefik.http.routers.jellyseerr.entrypoints"             = "external-websecure"
+      "traefik.http.routers.jellyseerr.tls"                       = "true"
+      "traefik.http.routers.jellyseerr.tls.certresolver"          = "cloudflare"
+      "traefik.http.routers.jellyseerr.entrypoints"               = "external-websecure"
     }
     content {
       label = labels.key
@@ -444,12 +444,12 @@ resource "docker_container" "lazylibrarian" {
 
   dynamic "labels" {
     for_each = {
-      "traefik.enable"                                              = "true"
-      "traefik.http.routers.lazylibrarian.rule"                     = "Host(`books.local.uaccloud.com`)"
+      "traefik.enable"                                               = "true"
+      "traefik.http.routers.lazylibrarian.rule"                      = "Host(`books.local.uaccloud.com`)"
       "traefik.http.services.lazylibrarian.loadbalancer.server.port" = "5299"
-      "traefik.http.routers.lazylibrarian.tls"                      = "true"
-      "traefik.http.routers.lazylibrarian.tls.certresolver"         = "cloudflare"
-      "traefik.http.routers.lazylibrarian.entrypoints"              = "websecure"
+      "traefik.http.routers.lazylibrarian.tls"                       = "true"
+      "traefik.http.routers.lazylibrarian.tls.certresolver"          = "cloudflare"
+      "traefik.http.routers.lazylibrarian.entrypoints"               = "websecure"
     }
     content {
       label = labels.key
