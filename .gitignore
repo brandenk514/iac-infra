@@ -17,3 +17,6 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+
+# MacOS specific files
+.DS_Store
