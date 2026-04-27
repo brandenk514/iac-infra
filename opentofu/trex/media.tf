@@ -320,41 +320,51 @@ resource "docker_container" "jellyfin" {
 }
 
 # ---------------------------------------------------------------------------
-# Jellyseerr – Media Requests
+# Seerr – Media Requests (successor to Jellyseerr)
 # ---------------------------------------------------------------------------
-resource "docker_image" "jellyseerr" {
-  name = "fallenbagel/jellyseerr:2.7.3"
+resource "docker_image" "seerr" {
+  name = "ghcr.io/seerr-team/seerr:latest"
 }
 
-resource "docker_container" "jellyseerr" {
-  name    = "jellyseerr"
-  image   = docker_image.jellyseerr.image_id
+resource "docker_container" "seerr" {
+  name    = "seerr"
+  image   = docker_image.seerr.image_id
   restart = "unless-stopped"
+  init    = true
 
   networks_advanced {
     name    = docker_network.proxy.id
-    aliases = ["jellyseerr"]
+    aliases = ["seerr"]
   }
 
   volumes {
-    host_path      = "${var.docker_mnt}/jellyseerr"
+    host_path      = "${var.docker_mnt}/seerr"
     container_path = "/app/config"
   }
 
   env = [
-    "LOG_LEVEL=info",
+    "LOG_LEVEL=debug",
     "TZ=${var.timezone}",
+    "PORT=5055",
   ]
+
+  healthcheck {
+    test         = ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/settings/public || exit 1"]
+    start_period = "20s"
+    timeout      = "3s"
+    interval     = "15s"
+    retries      = 3
+  }
 
   dynamic "labels" {
     for_each = {
-      "traefik.enable"                                            = "true"
-      "traefik.docker.network"                                    = "proxy"
-      "traefik.http.routers.jellyseerr.rule"                      = "Host(`request.uaccloud.com`)"
-      "traefik.http.services.jellyseerr.loadbalancer.server.port" = "5055"
-      "traefik.http.routers.jellyseerr.tls"                       = "true"
-      "traefik.http.routers.jellyseerr.tls.certresolver"          = "cloudflare"
-      "traefik.http.routers.jellyseerr.entrypoints"               = "external-websecure"
+      "traefik.enable"                                       = "true"
+      "traefik.docker.network"                               = "proxy"
+      "traefik.http.routers.seerr.rule"                      = "Host(`request.uaccloud.com`)"
+      "traefik.http.services.seerr.loadbalancer.server.port" = "5055"
+      "traefik.http.routers.seerr.tls"                       = "true"
+      "traefik.http.routers.seerr.tls.certresolver"          = "cloudflare"
+      "traefik.http.routers.seerr.entrypoints"               = "external-websecure"
     }
     content {
       label = labels.key
