@@ -116,6 +116,11 @@ resource "docker_container" "beszel_agent" {
     read_only      = true
   }
   volumes {
+    host_path      = "/var/run/dbus/system_bus_socket"
+    container_path = "/var/run/dbus/system_bus_socket"
+    read_only      = true
+  }
+  volumes {
     host_path      = "/mnt/r5-dstor/.beszel"
     container_path = "/extra-filesystems/md0"
     read_only      = true

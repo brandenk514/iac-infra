@@ -21,6 +21,11 @@ resource "docker_container" "beszel_agent" {
     container_path = "/var/run/docker.sock"
     read_only      = true
   }
+  volumes {
+    host_path      = "/var/run/dbus/system_bus_socket"
+    container_path = "/var/run/dbus/system_bus_socket"
+    read_only      = true
+  }
 
   env = [
     "LISTEN=45876",
