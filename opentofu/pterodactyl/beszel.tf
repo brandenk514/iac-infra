@@ -11,6 +11,7 @@ resource "docker_container" "beszel_agent" {
   image        = docker_image.beszel_agent.image_id
   restart      = "unless-stopped"
   network_mode = "host"
+  security_opts = ["apparmor:unconfined"]
 
   volumes {
     host_path      = "${var.docker_mnt}/beszel_agent_data"
