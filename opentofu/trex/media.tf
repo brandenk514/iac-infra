@@ -306,7 +306,7 @@ resource "docker_container" "jellyfin" {
   dynamic "labels" {
     for_each = {
       "traefik.enable"                                      = "true"
-      "traefik.http.routers.jellyfin.rule"                  = "Host(`watch.uaccloud.com`)"
+      "traefik.http.routers.jellyfin.rule"                  = "Host(`flix.uaccloud.com`)"
       "traefik.http.services.jellyfin.loadbalancer.server.port" = "8096"
       "traefik.http.routers.jellyfin.tls"                   = "true"
       "traefik.http.routers.jellyfin.tls.certresolver"      = "cloudflare"

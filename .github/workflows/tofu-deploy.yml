@@ -178,7 +178,7 @@ jobs:
         run: |
           tofu init \
             -backend-config="bucket=${{ secrets.B2_BUCKET }}" \
-            -backend-config="key=tdarr/terraform.tfstate" \
+            -backend-config="key=nanosaurus/terraform.tfstate" \
             -backend-config="region=${{ secrets.B2_REGION }}" \
             -backend-config="endpoints={ s3 = \"https://s3.${{ secrets.B2_REGION }}.backblazeb2.com\" }" \
             -backend-config="skip_credentials_validation=true" \
