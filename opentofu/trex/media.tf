@@ -480,6 +480,11 @@ resource "docker_container" "archiveteam_warrior" {
   image   = docker_image.archiveteam_warrior.image_id
   restart = "unless-stopped"
 
+  networks_advanced {
+    name    = docker_network.proxy.id
+    aliases = ["archiveteam-warrior"]
+  }
+
   log_driver = "json-file"
   log_opts = {
     "max-size" = "50m"
