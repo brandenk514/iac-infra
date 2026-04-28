@@ -24,7 +24,7 @@ resource "docker_container" "immich_server" {
 
   volumes {
     host_path      = var.upload_location
-    container_path = "/usr/src/app/upload"
+    container_path = "/data"
   }
   volumes {
     host_path      = "/etc/localtime"
@@ -51,13 +51,13 @@ resource "docker_container" "immich_server" {
 
   dynamic "labels" {
     for_each = {
-      "traefik.enable"                                              = "true"
-      "traefik.docker.network"                                      = "proxy"
-      "traefik.http.routers.immich-server.rule"                     = "Host(`photos.uaccloud.com`)"
+      "traefik.enable"                                               = "true"
+      "traefik.docker.network"                                       = "proxy"
+      "traefik.http.routers.immich-server.rule"                      = "Host(`photos.uaccloud.com`)"
       "traefik.http.services.immich-server.loadbalancer.server.port" = "2283"
-      "traefik.http.routers.immich-server.tls"                      = "true"
-      "traefik.http.routers.immich-server.tls.certresolver"         = "cloudflare"
-      "traefik.http.routers.immich-server.entrypoints"              = "external-websecure"
+      "traefik.http.routers.immich-server.tls"                       = "true"
+      "traefik.http.routers.immich-server.tls.certresolver"          = "cloudflare"
+      "traefik.http.routers.immich-server.entrypoints"               = "external-websecure"
     }
     content {
       label = labels.key
@@ -104,10 +104,10 @@ resource "docker_container" "immich_ml" {
 }
 
 # ---------------------------------------------------------------------------
-# Redis – Cache for Immich
+# Valkey – Cache for Immich (Redis-compatible)
 # ---------------------------------------------------------------------------
 resource "docker_image" "redis" {
-  name = "docker.io/redis:6.2-alpine@sha256:148bb5411c184abd288d9aaed139c98123eeb8824c5d3fce03cf721db58066d8"
+  name = "docker.io/valkey/valkey:9@sha256:3b55fbaa0cd93cf0d9d961f405e4dfcc70efe325e2d84da207a0a8e6d8fde4f9"
 }
 
 resource "docker_container" "immich_redis" {
@@ -128,16 +128,17 @@ resource "docker_container" "immich_redis" {
 }
 
 # ---------------------------------------------------------------------------
-# PostgreSQL (pgvecto-rs) – Database for Immich
+# PostgreSQL (VectorChord + pgvecto-rs) – Database for Immich
 # ---------------------------------------------------------------------------
 resource "docker_image" "immich_postgres" {
-  name = "docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0"
+  name = "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23"
 }
 
 resource "docker_container" "immich_postgres" {
-  name    = "immich_postgres"
-  image   = docker_image.immich_postgres.image_id
-  restart = "unless-stopped"
+  name     = "immich_postgres"
+  image    = docker_image.immich_postgres.image_id
+  restart  = "unless-stopped"
+  shm_size = 128
 
   networks_advanced {
     name = docker_network.immich.id
@@ -154,27 +155,4 @@ resource "docker_container" "immich_postgres" {
     host_path      = var.db_data_location
     container_path = "/var/lib/postgresql/data"
   }
-
-  healthcheck {
-    test = ["CMD-SHELL", <<-EOT
-      pg_isready --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" || exit 1;
-      Chksum="$$(psql --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" --tuples-only --no-align --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')";
-      echo "checksum failure count is $$Chksum";
-      [ "$$Chksum" = '0' ] || exit 1
-    EOT
-    ]
-    interval      = "5m0s"
-    start_period  = "5m0s"
-    start_interval = "30s"
-  }
-
-  command = [
-    "postgres",
-    "-c", "shared_preload_libraries=vectors.so",
-    "-c", "search_path=\"$$user\", public, vectors",
-    "-c", "logging_collector=on",
-    "-c", "max_wal_size=2GB",
-    "-c", "shared_buffers=512MB",
-    "-c", "wal_compression=on",
-  ]
 }

@@ -22,7 +22,7 @@ LOG_DIR="/var/log/docker-backups"
 LOG_FILE="${LOG_DIR}/backup-${TIMESTAMP}.log"
 
 # ── Discord webhook (set here or export DISCORD_WEBHOOK_URL before running) ────
-DISCORD_WEBHOOK_URL="${DISCORD_WEBHOOK_URL:-https://discord.com/api/webhooks/1333214271865094247/qIGciaFCU3to1fKaz38GC8XRhtAEmRukyTNFg_gVpXtzSH3NoztWrsdGQCZSqbkRvoYj}"
+DISCORD_WEBHOOK_URL=""
 
 # ── Parallelism — number of concurrent rsync workers (one per top-level dir) ──
 RSYNC_JOBS="${RSYNC_JOBS:-8}"
