@@ -6,7 +6,7 @@
 #   sudo ./scripts/backup.sh [--dry-run]
 #
 # Requirements:
-#   - docker compose v2
+#   - docker
 #   - rsync
 #   - curl (for Discord notifications)
 #   - NFS share mounted at /mnt/backup-repo
@@ -15,19 +15,7 @@
 set -euo pipefail
 
 # ── Configuration ──────────────────────────────────────────────────────────────
-COMPOSE_DIR="/home/uac-admin/docker-compose-infra"
-COMPOSE_FILE="${COMPOSE_DIR}/compose.yml"
-ENV_FILE="${COMPOSE_DIR}/.env"
-
-# Source the .env — handles Docker Compose style "KEY = VALUE" with spaces around =
-while IFS= read -r line || [[ -n "${line}" ]]; do
-    # Skip blank lines and comments
-    [[ -z "${line}" || "${line}" =~ ^[[:space:]]*# ]] && continue
-    # Strip spaces around the = sign, then export
-    export "$(echo "${line}" | sed 's/[[:space:]]*=[[:space:]]*/=/' | sed 's/="\(.*\)"/=\1/' | sed "s/='\(.*\)'/=\1/")" 2>/dev/null || true
-done < "${ENV_FILE}"
-
-SOURCE_DIR="${DOCKER_MNT:-/mnt/r5-dstor}"   # Primary data volume
+SOURCE_DIR="/mnt/r5-dstor/containers"   # Primary data volume (override via env var)
 BACKUP_DEST="/mnt/backup-repo"
 TIMESTAMP="$(date +%Y-%m-%dT%H-%M-%S)"
 LOG_DIR="/var/log/docker-backups"
@@ -116,14 +104,20 @@ EOF
         "${DISCORD_WEBHOOK_URL}" || log "WARNING: Discord notification failed to send."
 }
 
+# Tracks containers that were running before backup, so we can restart them on exit/error
+RUNNING_CONTAINERS=""
+
 # Trap any unexpected exits: restart containers and send failure notification
 _on_error() {
     local exit_code=$?
     local line_no=${1:-}
     log "ERROR: Script exited unexpectedly (exit ${exit_code}, line ${line_no})"
-    log ">> Attempting to restart containers after failure..."
-    docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up --detach 2>>${LOG_FILE} || \
-        log "WARNING: Failed to restart containers — manual intervention required!"
+    if [[ -n "${RUNNING_CONTAINERS}" ]]; then
+        log ">> Attempting to restart containers after failure..."
+        # shellcheck disable=SC2086
+        docker start ${RUNNING_CONTAINERS} 2>>"${LOG_FILE}" >/dev/null || \
+            log "WARNING: Failed to restart containers — manual intervention required!"
+    fi
     notify_discord "failure" "The backup script exited unexpectedly at line **${line_no}** with exit code **${exit_code}**. Containers have been restarted. Check the log for details."
 }
 trap '_on_error ${LINENO}' ERR
@@ -131,32 +125,33 @@ trap '_on_error ${LINENO}' ERR
 # ── Preflight checks ───────────────────────────────────────────────────────────
 mkdir -p "${LOG_DIR}"
 
-[[ -f "${COMPOSE_FILE}" ]] || die "compose.yml not found at ${COMPOSE_FILE}"
 [[ -d "${SOURCE_DIR}" ]]   || die "Source directory not found: ${SOURCE_DIR}"
 [[ -d "${BACKUP_DEST}" ]]  || die "NFS backup mount not found: ${BACKUP_DEST}. Is the share mounted?"
 command -v docker   &>/dev/null || die "'docker' not found in PATH"
 command -v rsync    &>/dev/null || die "'rsync' not found in PATH"
 
 log "======================================================"
-log "  Docker Compose Backup — ${TIMESTAMP}"
+log "  Docker Backup — ${TIMESTAMP}"
 [[ "${DRY_RUN}" == "true" ]] && log "  ** DRY-RUN MODE — no changes will be made **"
 log "======================================================"
 log "  Source  : ${SOURCE_DIR}"
 log "  Dest    : ${BACKUP_DEST}"
-log "  Compose : ${COMPOSE_FILE}"
 log "======================================================"
 
-# ── Step 1: Stop all containers ────────────────────────────────────────────────
-log ">> Stopping all containers..."
-if [[ "${DRY_RUN}" == "true" ]]; then
-    log "   [dry-run] docker compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} down"
+# ── Step 1: Stop all running containers ───────────────────────────────────────
+log ">> Stopping all running containers..."
+RUNNING_CONTAINERS="$(docker ps --quiet | tr '\n' ' ')"
+RUNNING_COUNT=$(echo "${RUNNING_CONTAINERS}" | wc -w)
+
+if [[ "${RUNNING_COUNT}" -eq 0 ]]; then
+    log "   No running containers found."
+elif [[ "${DRY_RUN}" == "true" ]]; then
+    log "   [dry-run] docker stop $(docker ps --format '{{.Names}}' | tr '\n' ' ')"
 else
-    docker compose \
-        -f "${COMPOSE_FILE}" \
-        --env-file "${ENV_FILE}" \
-        down
+    # shellcheck disable=SC2086
+    docker stop ${RUNNING_CONTAINERS} >/dev/null
+    log "   Stopped ${RUNNING_COUNT} containers."
 fi
-log "   All containers stopped."
 
 # ── Step 2: rsync data to NFS share (parallel workers) ────────────────────────
 log ">> Starting parallel rsync backup (${RSYNC_JOBS} workers)..."
@@ -242,23 +237,27 @@ fi
 log "   All ${#TOP_LEVEL_DIRS[@]} directories synced successfully."
 
 
-# ── Step 3: Restart all containers ────────────────────────────────────────────
-log ">> Restarting all containers..."
-if [[ "${DRY_RUN}" == "true" ]]; then
-    log "   [dry-run] docker compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d"
+# ── Step 3: Restart containers ────────────────────────────────────────────────
+log ">> Restarting containers..."
+if [[ "${RUNNING_COUNT}" -eq 0 ]]; then
+    log "   No containers to restart."
+elif [[ "${DRY_RUN}" == "true" ]]; then
+    log "   [dry-run] docker start <${RUNNING_COUNT} containers>"
 else
-    docker compose \
-        -f "${COMPOSE_FILE}" \
-        --env-file "${ENV_FILE}" \
-        up --detach
+    # shellcheck disable=SC2086
+    docker start ${RUNNING_CONTAINERS} >/dev/null
+    log "   Started ${RUNNING_COUNT} containers."
 fi
-log "   All containers started."
 
 log "======================================================"
 log "  Backup complete! Log saved to: ${LOG_FILE}"
 log "======================================================"
 
-notify_discord "success" "All containers were stopped, **76G** of data was synced to \`${BACKUP_DEST}\`, and all containers have been restarted successfully."
+# Measure synced size from the source (local disk, fast). -x matches rsync's --one-file-system.
+BACKUP_SIZE="$(du -shx "${SOURCE_DIR}" 2>/dev/null | cut -f1)"
+BACKUP_SIZE="${BACKUP_SIZE:-unknown}"
+
+notify_discord "success" "All containers were stopped, **${BACKUP_SIZE}** of data was synced to \`${BACKUP_DEST}\`, and all containers have been restarted successfully."
 
 # Disable ERR trap — we're done
 trap - ERR
