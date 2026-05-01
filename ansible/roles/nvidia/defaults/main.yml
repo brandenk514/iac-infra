@@ -1,0 +1,5 @@
+---
+nvidia_driver_branch: "590"
+nvidia_use_dkms: false
+nvidia_cdi_spec_path: /etc/cdi/nvidia.yaml
+nvidia_kernel_modules_package: "linux-modules-nvidia-{{ nvidia_driver_branch }}-generic-hwe-{{ ansible_facts['distribution_version'] }}"

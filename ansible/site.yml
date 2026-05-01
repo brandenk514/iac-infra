@@ -16,3 +16,12 @@
     - role: traefik
       tags: [traefik]
   tags: [traefik]
+
+- name: Configure GPU hosts
+  hosts: gpu
+  become: true
+  gather_facts: true
+  roles:
+    - role: nvidia
+      tags: [nvidia, gpu]
+  tags: [nvidia, gpu]
