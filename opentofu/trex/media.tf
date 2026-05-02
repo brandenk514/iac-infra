@@ -367,6 +367,8 @@ resource "docker_container" "seerr" {
   }
 
   env = [
+    "PUID=${var.puid}",
+    "PGID=${var.pgid}",
     "LOG_LEVEL=debug",
     "TZ=${var.timezone}",
     "PORT=5055",
