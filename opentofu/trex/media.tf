@@ -70,8 +70,16 @@ resource "docker_container" "sonarr" {
     container_path = "/config"
   }
   volumes {
-    volume_name    = docker_volume.media_library_nfs.name
+    volume_name    = docker_volume.tv_nfs.name
     container_path = "/tv"
+  }
+  volumes {
+    volume_name    = docker_volume.anime_nfs.name
+    container_path = "/anime"
+  }
+  volumes {
+    volume_name    = docker_volume.kids_tv_nfs.name
+    container_path = "/kids-tv"
   }
   volumes {
     host_path      = var.tovpn_mnt
@@ -122,7 +130,7 @@ resource "docker_container" "radarr" {
     container_path = "/config"
   }
   volumes {
-    volume_name    = docker_volume.media_library_nfs.name
+    volume_name    = docker_volume.movies_nfs.name
     container_path = "/movies"
   }
   volumes {
@@ -174,7 +182,7 @@ resource "docker_container" "lidarr" {
     container_path = "/config"
   }
   volumes {
-    volume_name    = docker_volume.media_library_nfs.name
+    volume_name    = docker_volume.music_nfs.name
     container_path = "/music"
   }
   volumes {
@@ -295,12 +303,24 @@ resource "docker_container" "jellyfin" {
     container_path = "/config"
   }
   volumes {
-    volume_name    = docker_volume.media_library_nfs.name
+    volume_name    = docker_volume.tv_nfs.name
     container_path = "/data/tvshows"
   }
   volumes {
-    volume_name    = docker_volume.media_library_nfs.name
+    volume_name    = docker_volume.movies_nfs.name
     container_path = "/data/movies"
+  }
+  volumes {
+    volume_name    = docker_volume.music_nfs.name
+    container_path = "/data/music"
+  }
+  volumes {
+    volume_name    = docker_volume.anime_nfs.name
+    container_path = "/data/anime"
+  }
+  volumes {
+    volume_name    = docker_volume.kids_tv_nfs.name
+    container_path = "/data/kids-tv"
   }
 
   dynamic "labels" {
@@ -441,7 +461,7 @@ resource "docker_container" "lazylibrarian" {
     container_path = "/downloads"
   }
   volumes {
-    volume_name    = docker_volume.media_library_nfs.name
+    volume_name    = docker_volume.books_nfs.name
     container_path = "/books"
   }
 
