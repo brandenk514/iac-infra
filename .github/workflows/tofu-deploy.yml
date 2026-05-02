@@ -12,6 +12,9 @@ on:
       - '.github/workflows/tofu-deploy.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   trex-plan:
     runs-on: ubuntu-latest
