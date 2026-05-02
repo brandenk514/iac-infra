@@ -355,6 +355,7 @@ resource "docker_container" "seerr" {
   image   = docker_image.seerr.image_id
   restart = "unless-stopped"
   init    = true
+  user    = "${var.puid}:${var.pgid}"
 
   networks_advanced {
     name    = docker_network.proxy.id
@@ -367,8 +368,6 @@ resource "docker_container" "seerr" {
   }
 
   env = [
-    "PUID=${var.puid}",
-    "PGID=${var.pgid}",
     "LOG_LEVEL=debug",
     "TZ=${var.timezone}",
     "PORT=5055",
