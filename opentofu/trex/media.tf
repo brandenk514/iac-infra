@@ -322,6 +322,10 @@ resource "docker_container" "jellyfin" {
     volume_name    = docker_volume.kids_tv_nfs.name
     container_path = "/data/kids-tv"
   }
+  volumes {
+    volume_name    = docker_volume.books_nfs.name
+    container_path = "/data/books"
+  }
 
   dynamic "labels" {
     for_each = {
