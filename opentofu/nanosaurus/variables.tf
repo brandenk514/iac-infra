@@ -26,6 +26,12 @@ variable "docker_mnt" {
   default     = "/opt"
 }
 
+variable "tdarr_transcode_cache" {
+  description = "Host path for the dedicated Tdarr transcode cache"
+  type        = string
+  default     = "/mnt/transcode-cache"
+}
+
 # ---------------------------------------------------------------------------
 # General
 # ---------------------------------------------------------------------------

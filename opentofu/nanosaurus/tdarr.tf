@@ -52,7 +52,7 @@ resource "docker_container" "tdarr" {
     container_path = "/media"
   }
   volumes {
-    host_path      = "${var.docker_mnt}/tdarr/transcode_cache"
+    host_path      = var.tdarr_transcode_cache
     container_path = "/temp"
   }
 
@@ -108,7 +108,7 @@ resource "docker_container" "tdarr_node" {
     container_path = "/media"
   }
   volumes {
-    host_path      = "${var.docker_mnt}/tdarr/transcode_cache"
+    host_path      = var.tdarr_transcode_cache
     container_path = "/temp"
   }
 
