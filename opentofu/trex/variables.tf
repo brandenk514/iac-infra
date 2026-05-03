@@ -165,3 +165,12 @@ variable "webui_secret_key" {
   type        = string
   sensitive   = true
 }
+
+# ---------------------------------------------------------------------------
+# Open Terminal
+# ---------------------------------------------------------------------------
+variable "open_terminal_api_key" {
+  description = "API key for Open Terminal"
+  type        = string
+  sensitive   = true
+}
