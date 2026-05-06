@@ -89,13 +89,9 @@ resource "docker_container" "tdarr_node" {
     "nodeName=a310-node",
   ]
 
-  # Intel A310 only — bind the discrete card's DRI nodes and remap to the
-  # default render path so QSV picks the A310 instead of the host iGPU.
-  # Verify host mapping with: ls -la /dev/dri/by-path/
-  devices {
-    host_path      = "/dev/dri/card1"
-    container_path = "/dev/dri/card0"
-  }
+  # Intel A310 only — bind only the A310's render node, remapped to the
+  # default path so QSV picks it. Mounting iGPU's card alongside breaks
+  # libva topology checks. Verify mapping with: ls -la /dev/dri/by-path/
   devices {
     host_path      = "/dev/dri/renderD129"
     container_path = "/dev/dri/renderD128"
