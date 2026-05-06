@@ -66,7 +66,8 @@ resource "docker_container" "tdarr" {
 # Tdarr Node – Transcode Worker (Intel QSV via A310)
 # ---------------------------------------------------------------------------
 resource "docker_image" "tdarr_node" {
-  name = "tdarr-node:latest"
+  name = "ghcr.io/haveagitgat/tdarr_node:latest"
+
 }
 
 resource "docker_container" "tdarr_node" {
