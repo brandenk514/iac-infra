@@ -89,10 +89,16 @@ resource "docker_container" "tdarr_node" {
     "nodeName=a310-node",
   ]
 
-  # Intel A310 – expose DRI for QSV / VA-API hardware transcoding
+  # Intel A310 only — bind the discrete card's DRI nodes and remap to the
+  # default render path so QSV picks the A310 instead of the host iGPU.
+  # Verify host mapping with: ls -la /dev/dri/by-path/
   devices {
-    host_path      = "/dev/dri"
-    container_path = "/dev/dri"
+    host_path      = "/dev/dri/card1"
+    container_path = "/dev/dri/card0"
+  }
+  devices {
+    host_path      = "/dev/dri/renderD129"
+    container_path = "/dev/dri/renderD128"
   }
 
   volumes {
