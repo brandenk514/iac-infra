@@ -66,7 +66,18 @@ resource "docker_container" "tdarr" {
 # Tdarr Node – Transcode Worker (Intel QSV via A310)
 # ---------------------------------------------------------------------------
 resource "docker_image" "tdarr_node" {
-  name = "ghcr.io/haveagitgat/tdarr_node:latest"
+  name = "tdarr-node-intel:latest"
+
+  build {
+    context    = "${path.module}/dockerfiles/tdarr-node"
+    dockerfile = "Dockerfile"
+    tag        = ["tdarr-node-intel:latest"]
+    pull_parent = true
+  }
+
+  triggers = {
+    dockerfile_sha = filesha1("${path.module}/dockerfiles/tdarr-node/Dockerfile")
+  }
 }
 
 resource "docker_container" "tdarr_node" {
