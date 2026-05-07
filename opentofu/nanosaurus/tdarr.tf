@@ -88,14 +88,15 @@ resource "docker_container" "tdarr_node" {
     "serverIP=tdarr",
     "serverPort=8266",
     "nodeName=a310-node",
+    "LIBVA_DRIVER_NAME=iHD",
   ]
 
-  # Intel A310 only — bind only the A310's render node, remapped to the
-  # default path so QSV picks it. Mounting iGPU's card alongside breaks
-  # libva topology checks. Verify mapping with: ls -la /dev/dri/by-path/
+  # Intel A310 — mount the A310's render node at its native path. Remapping
+  # to renderD128 breaks libva's DRM topology lookup (vaGetDisplayDRM returns
+  # NULL). Tdarr flow plugins must point QSV/VAAPI at /dev/dri/renderD129.
   devices {
     host_path      = "/dev/dri/renderD129"
-    container_path = "/dev/dri/renderD128"
+    container_path = "/dev/dri/renderD129"
   }
 
   volumes {
