@@ -92,12 +92,18 @@ resource "docker_container" "openwebui" {
     "RAG_TOP_K=20",
     "RAG_TOP_K_RERANKER=5",
     "RAG_SYSTEM_CONTEXT=true",
+    "ENABLE_RAG_WEB_SEARCH=true",
+    "ENABLE_WEB_SEARCH=true",
+    "RAG_WEB_SEARCH_ENGINE=searxng",
+    "WEB_SEARCH_ENGINE=searxng",
+    "SEARXNG_QUERY_URL=http://searxng:8080/search?q=<query>",
     "TZ=${var.timezone}",
   ]
 
   depends_on = [
     docker_container.ollama,
     docker_container.infinity,
+    docker_container.searxng,
   ]
 
   dynamic "labels" {
