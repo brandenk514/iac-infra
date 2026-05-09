@@ -96,7 +96,7 @@ resource "docker_container" "openwebui" {
     "ENABLE_WEB_SEARCH=true",
     "RAG_WEB_SEARCH_ENGINE=searxng",
     "WEB_SEARCH_ENGINE=searxng",
-    "SEARXNG_QUERY_URL=http://searxng:8080/search?q=<query>",
+    "SEARXNG_QUERY_URL=http://searxng:8080/search?q=<query>&format=json",
     "TZ=${var.timezone}",
   ]
 
