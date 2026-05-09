@@ -240,7 +240,7 @@ resource "docker_container" "searxng" {
 # Open Terminal – Sandboxed Shell for Open WebUI tools
 # ---------------------------------------------------------------------------
 resource "docker_image" "open_terminal" {
-  name = "ghcr.io/open-webui/open-terminal:v0.11.34"
+  name = "ghcr.io/open-webui/open-terminal:0.10.2"
 }
 
 resource "docker_container" "open_terminal" {
