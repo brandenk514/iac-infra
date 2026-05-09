@@ -2,7 +2,7 @@
 # Dozzle – Container Log Viewer
 # ---------------------------------------------------------------------------
 resource "docker_image" "dozzle" {
-  name = "amir20/dozzle:latest"
+  name = "amir20/dozzle:v10.5.2"
 }
 
 resource "docker_container" "dozzle" {
@@ -46,7 +46,7 @@ resource "docker_container" "dozzle" {
 # Beszel – Server Monitoring Dashboard
 # ---------------------------------------------------------------------------
 resource "docker_image" "beszel" {
-  name = "henrygd/beszel:latest"
+  name = "henrygd/beszel:0.18.7"
 }
 
 resource "docker_container" "beszel" {
@@ -88,7 +88,7 @@ resource "docker_container" "beszel" {
 # Beszel Agent – Monitoring Agent (NVIDIA-enabled)
 # ---------------------------------------------------------------------------
 resource "docker_image" "beszel_agent" {
-  name = "henrygd/beszel-agent-nvidia:latest"
+  name = "henrygd/beszel-agent-nvidia:0.18.7"
 }
 
 resource "docker_container" "beszel_agent" {

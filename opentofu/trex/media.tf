@@ -2,7 +2,7 @@
 # Prowlarr – Indexer Manager
 # ---------------------------------------------------------------------------
 resource "docker_image" "prowlarr" {
-  name = "linuxserver/prowlarr:latest"
+  name = "linuxserver/prowlarr:2.3.5"
 }
 
 resource "docker_container" "prowlarr" {
@@ -46,7 +46,7 @@ resource "docker_container" "prowlarr" {
 # Sonarr – TV Series
 # ---------------------------------------------------------------------------
 resource "docker_image" "sonarr" {
-  name = "linuxserver/sonarr:latest"
+  name = "linuxserver/sonarr:4.0.17"
 }
 
 resource "docker_container" "sonarr" {
@@ -106,7 +106,7 @@ resource "docker_container" "sonarr" {
 # Radarr – Movies
 # ---------------------------------------------------------------------------
 resource "docker_image" "radarr" {
-  name = "linuxserver/radarr:latest"
+  name = "linuxserver/radarr:6.1.1"
 }
 
 resource "docker_container" "radarr" {
@@ -158,7 +158,7 @@ resource "docker_container" "radarr" {
 # Lidarr – Music
 # ---------------------------------------------------------------------------
 resource "docker_image" "lidarr" {
-  name = "linuxserver/lidarr:latest"
+  name = "linuxserver/lidarr:3.1.0"
 }
 
 resource "docker_container" "lidarr" {
@@ -271,7 +271,7 @@ resource "docker_container" "tovpn" {
 # Jellyfin – Media Server
 # ---------------------------------------------------------------------------
 resource "docker_image" "jellyfin" {
-  name = "lscr.io/linuxserver/jellyfin:latest"
+  name = "lscr.io/linuxserver/jellyfin:10.11.8"
 }
 
 resource "docker_container" "jellyfin" {
@@ -347,7 +347,7 @@ resource "docker_container" "jellyfin" {
 # Seerr – Media Requests (successor to Jellyseerr)
 # ---------------------------------------------------------------------------
 resource "docker_image" "seerr" {
-  name = "ghcr.io/seerr-team/seerr:latest"
+  name = "ghcr.io/seerr-team/seerr:v3.0.1"
 }
 
 resource "docker_container" "seerr" {
@@ -401,7 +401,7 @@ resource "docker_container" "seerr" {
 # FlareSolverr – Captcha Bypass Proxy
 # ---------------------------------------------------------------------------
 resource "docker_image" "flaresolverr" {
-  name = "ghcr.io/flaresolverr/flaresolverr:latest"
+  name = "ghcr.io/flaresolverr/flaresolverr:v3.4.6"
 }
 
 resource "docker_container" "flaresolverr" {
@@ -443,7 +443,7 @@ resource "docker_container" "flaresolverr" {
 # LazyLibrarian – Books
 # ---------------------------------------------------------------------------
 resource "docker_image" "lazylibrarian" {
-  name = "lscr.io/linuxserver/lazylibrarian:latest"
+  name = "lscr.io/linuxserver/lazylibrarian:5f28f033-ls281"
 }
 
 resource "docker_container" "lazylibrarian" {
@@ -496,7 +496,7 @@ resource "docker_container" "lazylibrarian" {
 # Archive Team Warrior
 # ---------------------------------------------------------------------------
 resource "docker_image" "archiveteam_warrior" {
-  name = "atdr.meo.ws/archiveteam/warrior-dockerfile:latest"
+  name = "atdr.meo.ws/archiveteam/warrior-dockerfile:latest@sha256:ef212e47037a8de8425cc3f56629890d3e0aad7b630ddbc8aff0189e3efa2e37"
 }
 
 resource "docker_container" "archiveteam_warrior" {

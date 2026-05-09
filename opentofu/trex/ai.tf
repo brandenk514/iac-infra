@@ -2,7 +2,7 @@
 # Ollama – Local LLM Runtime
 # ---------------------------------------------------------------------------
 resource "docker_image" "ollama" {
-  name = "ollama/ollama:latest"
+  name = "ollama/ollama:0.23.2"
 }
 
 resource "docker_container" "ollama" {
@@ -51,7 +51,7 @@ resource "docker_container" "ollama" {
 # Open WebUI – Chat Frontend for Ollama
 # ---------------------------------------------------------------------------
 resource "docker_image" "openwebui" {
-  name = "ghcr.io/open-webui/open-webui:latest"
+  name = "ghcr.io/open-webui/open-webui:v0.9.4"
 }
 
 resource "docker_container" "openwebui" {
@@ -126,7 +126,7 @@ resource "docker_container" "openwebui" {
 # Apache Tika – Document Text Extraction (RAG ingest)
 # ---------------------------------------------------------------------------
 resource "docker_image" "tika" {
-  name = "apache/tika:latest-full"
+  name = "apache/tika:3.3.0.0-full"
 }
 
 resource "docker_container" "tika" {
@@ -179,7 +179,7 @@ resource "docker_container" "searxng_redis" {
 }
 
 resource "docker_image" "searxng" {
-  name = "searxng/searxng:latest"
+  name = "searxng/searxng:2026.5.9-0cba32c15"
 }
 
 resource "docker_container" "searxng" {
@@ -240,7 +240,7 @@ resource "docker_container" "searxng" {
 # Open Terminal – Sandboxed Shell for Open WebUI tools
 # ---------------------------------------------------------------------------
 resource "docker_image" "open_terminal" {
-  name = "ghcr.io/open-webui/open-terminal:latest"
+  name = "ghcr.io/open-webui/open-terminal:v0.11.34"
 }
 
 resource "docker_container" "open_terminal" {

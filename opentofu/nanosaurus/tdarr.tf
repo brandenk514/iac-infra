@@ -2,7 +2,7 @@
 # Tdarr Server – Transcode Automation
 # ---------------------------------------------------------------------------
 resource "docker_image" "tdarr" {
-  name = "ghcr.io/haveagitgat/tdarr:latest"
+  name = "ghcr.io/haveagitgat/tdarr:2.50.01"
 }
 
 resource "docker_container" "tdarr" {
@@ -66,7 +66,7 @@ resource "docker_container" "tdarr" {
 # Tdarr Node – Transcode Worker (Intel QSV via A310)
 # ---------------------------------------------------------------------------
 resource "docker_image" "tdarr_node" {
-  name = "ghcr.io/haveagitgat/tdarr_node:latest"
+  name = "ghcr.io/haveagitgat/tdarr_node:2.50.02"
 
 }
 
