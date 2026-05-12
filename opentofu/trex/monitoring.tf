@@ -2,7 +2,7 @@
 # Dozzle – Container Log Viewer
 # ---------------------------------------------------------------------------
 resource "docker_image" "dozzle" {
-  name = "amir20/dozzle:v10.5.2"
+  name = "amir20/dozzle:v10.5.3"
 }
 
 resource "docker_container" "dozzle" {
