@@ -1,12 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-  "terraform": { "managers": ["terraform"] },
   "customManagers": [
     {
       "customType": "regex",
       "description": "Update docker_image resources in OpenTofu/Terraform",
-      "fileMatch": ["\\.tf$"],
+      "managerFilePatterns": ["/\\.tf$/"],
       "matchStrings": [
         "resource\\s+\"docker_image\"\\s+\"[^\"]+\"\\s*\\{[^}]*?name\\s*=\\s*\"(?<depName>[^:\"]+):(?<currentValue>[^\"@]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?\""
       ],
