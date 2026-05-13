@@ -1,3 +1,0 @@
----
-- name: rebuild initramfs
-  ansible.builtin.command: update-initramfs -u
