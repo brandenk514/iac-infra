@@ -167,3 +167,41 @@ resource "docker_container" "beszel_agent" {
     container_path = "/dev/nvme0"
   }
 }
+
+# ---------------------------------------------------------------------------
+# Uptime Kuma – Status / Uptime Monitoring
+# ---------------------------------------------------------------------------
+resource "docker_image" "uptime_kuma" {
+  name = "louislam/uptime-kuma:2.3.2"
+}
+
+resource "docker_container" "uptime_kuma" {
+  name    = "uptime-kuma"
+  image   = docker_image.uptime_kuma.image_id
+  restart = "unless-stopped"
+
+  networks_advanced {
+    name    = docker_network.proxy.id
+    aliases = ["uptime-kuma"]
+  }
+
+  volumes {
+    host_path      = "${var.docker_mnt}/uptime_kuma_data"
+    container_path = "/app/data"
+  }
+
+  dynamic "labels" {
+    for_each = {
+      "traefik.enable"                                            = "true"
+      "traefik.http.routers.uptime-kuma.rule"                     = "Host(`2gt-uptime.local.uaccloud.com`)"
+      "traefik.http.services.uptime-kuma.loadbalancer.server.port" = "3001"
+      "traefik.http.routers.uptime-kuma.tls"                      = "true"
+      "traefik.http.routers.uptime-kuma.tls.certresolver"         = "cloudflare"
+      "traefik.http.routers.uptime-kuma.entrypoints"              = "websecure"
+    }
+    content {
+      label = labels.key
+      value = labels.value
+    }
+  }
+}
