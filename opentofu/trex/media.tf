@@ -537,3 +537,47 @@ resource "docker_container" "archiveteam_warrior" {
     }
   }
 }
+
+# ---------------------------------------------------------------------------
+# Houndarr – Media Tracker
+# ---------------------------------------------------------------------------
+resource "docker_image" "houndarr" {
+  name = "ghcr.io/av1155/houndarr:latest"
+}
+
+resource "docker_container" "houndarr" {
+  name    = "houndarr"
+  image   = docker_image.houndarr.image_id
+  restart = "unless-stopped"
+
+  networks_advanced {
+    name    = docker_network.proxy.id
+    aliases = ["houndarr"]
+  }
+
+  env = [
+    "PUID=${var.puid}",
+    "PGID=${var.pgid}",
+    "TZ=${var.timezone}",
+  ]
+
+  volumes {
+    host_path      = "${var.docker_mnt}/houndarr/data"
+    container_path = "/data"
+  }
+
+  dynamic "labels" {
+    for_each = {
+      "traefik.enable"                                           = "true"
+      "traefik.http.routers.houndarr.rule"                      = "Host(`houndarr.local.uaccloud.com`)"
+      "traefik.http.routers.houndarr.entrypoints"               = "websecure"
+      "traefik.http.services.houndarr.loadbalancer.server.port" = "8877"
+      "traefik.http.routers.houndarr.tls"                       = "true"
+      "traefik.http.routers.houndarr.tls.certresolver"          = "cloudflare"
+    }
+    content {
+      label = labels.key
+      value = labels.value
+    }
+  }
+}
