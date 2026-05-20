@@ -14,4 +14,3 @@ timezone: America/Denver
 # If unset, tailscale is installed but not brought up.
 tailscale_authkey: ""
 tailscale_up_args: "--ssh"
-
