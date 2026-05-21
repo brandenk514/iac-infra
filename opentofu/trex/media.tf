@@ -271,7 +271,7 @@ resource "docker_container" "tovpn" {
 # Jellyfin – Media Server
 # ---------------------------------------------------------------------------
 resource "docker_image" "jellyfin" {
-  name = "lscr.io/linuxserver/jellyfin:10.11.8"
+  name = "lscr.io/linuxserver/jellyfin:10.11.9"
 }
 
 resource "docker_container" "jellyfin" {
