@@ -204,6 +204,8 @@ resource "docker_container" "tailscale_uptime_kuma" {
     "TS_HOSTNAME=uptime-kuma",
     "TS_STATE_DIR=/var/lib/tailscale",
     "TS_SERVE_CONFIG=/config/serve.json",
+    # * OAuth client secrets require a tag; update the tag to match your ACLs.
+    "TS_EXTRA_ARGS=--advertise-tags=tag:container",
   ]
 }
 
