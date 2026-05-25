@@ -169,39 +169,62 @@ resource "docker_container" "beszel_agent" {
 }
 
 # ---------------------------------------------------------------------------
+# Tailscale – Uptime Kuma Sidecar
+# Runs as the network namespace owner; uptime_kuma joins it via network_mode.
+# ---------------------------------------------------------------------------
+resource "docker_image" "tailscale" {
+  name = "tailscale/tailscale:v1.92.4"
+}
+
+resource "docker_container" "tailscale_uptime_kuma" {
+  name    = "tailscale-uptime-kuma"
+  image   = docker_image.tailscale.image_id
+  restart = "unless-stopped"
+
+  capabilities {
+    add = ["NET_ADMIN", "NET_RAW"]
+  }
+
+  devices {
+    host_path      = "/dev/net/tun"
+    container_path = "/dev/net/tun"
+  }
+
+  volumes {
+    host_path      = "${var.docker_mnt}/tailscale_uptime_kuma_state"
+    container_path = "/var/lib/tailscale"
+  }
+  volumes {
+    host_path      = "${var.docker_mnt}/tailscale_uptime_kuma_config"
+    container_path = "/config"
+  }
+
+  env = [
+    "TS_AUTHKEY=${var.tailscale_auth_key}",
+    "TS_HOSTNAME=uptime-kuma",
+    "TS_STATE_DIR=/var/lib/tailscale",
+    "TS_SERVE_CONFIG=/config/serve.json",
+  ]
+}
+
+# ---------------------------------------------------------------------------
 # Uptime Kuma – Status / Uptime Monitoring
+# Shares the Tailscale sidecar's network namespace; accessible via tailnet.
 # ---------------------------------------------------------------------------
 resource "docker_image" "uptime_kuma" {
   name = "louislam/uptime-kuma:2.3.2"
 }
 
 resource "docker_container" "uptime_kuma" {
-  name    = "uptime-kuma"
-  image   = docker_image.uptime_kuma.image_id
-  restart = "unless-stopped"
+  name         = "uptime-kuma"
+  image        = docker_image.uptime_kuma.image_id
+  restart      = "unless-stopped"
+  network_mode = "container:${docker_container.tailscale_uptime_kuma.name}"
 
-  networks_advanced {
-    name    = docker_network.proxy.id
-    aliases = ["uptime-kuma"]
-  }
+  depends_on = [docker_container.tailscale_uptime_kuma]
 
   volumes {
     host_path      = "${var.docker_mnt}/uptime_kuma_data"
     container_path = "/app/data"
-  }
-
-  dynamic "labels" {
-    for_each = {
-      "traefik.enable"                                            = "true"
-      "traefik.http.routers.uptime-kuma.rule"                     = "Host(`2gt-uptime.local.uaccloud.com`)"
-      "traefik.http.services.uptime-kuma.loadbalancer.server.port" = "3001"
-      "traefik.http.routers.uptime-kuma.tls"                      = "true"
-      "traefik.http.routers.uptime-kuma.tls.certresolver"         = "cloudflare"
-      "traefik.http.routers.uptime-kuma.entrypoints"              = "websecure"
-    }
-    content {
-      label = labels.key
-      value = labels.value
-    }
   }
 }

@@ -174,3 +174,12 @@ variable "open_terminal_api_key" {
   type        = string
   sensitive   = true
 }
+
+# ---------------------------------------------------------------------------
+# Tailscale
+# ---------------------------------------------------------------------------
+variable "tailscale_auth_key" {
+  description = "Tailscale auth key (reusable key or OAuth client secret) for the uptime-kuma sidecar"
+  type        = string
+  sensitive   = true
+}
