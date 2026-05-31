@@ -172,7 +172,7 @@ resource "docker_container" "beszel_agent" {
 # Uptime Kuma – Status / Uptime Monitoring
 # ---------------------------------------------------------------------------
 resource "docker_image" "uptime_kuma" {
-  name = "louislam/uptime-kuma:2.3.2"
+  name = "louislam/uptime-kuma:2.4.0"
 }
 
 resource "docker_container" "uptime_kuma" {
