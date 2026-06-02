@@ -51,7 +51,7 @@ resource "docker_container" "ollama" {
 # Open WebUI – Chat Frontend for Ollama
 # ---------------------------------------------------------------------------
 resource "docker_image" "openwebui" {
-  name = "ghcr.io/open-webui/open-webui:v0.9.5"
+  name = "ghcr.io/open-webui/open-webui:v0.9.6"
 }
 
 resource "docker_container" "openwebui" {
