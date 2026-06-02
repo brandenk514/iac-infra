@@ -173,7 +173,7 @@ resource "docker_container" "beszel_agent" {
 # Runs as the network namespace owner; uptime_kuma joins it via network_mode.
 # ---------------------------------------------------------------------------
 resource "docker_image" "tailscale" {
-  name = "tailscale/tailscale:v1.92.4"
+  name = "tailscale/tailscale:v1.98.4"
 }
 
 resource "docker_container" "tailscale_uptime_kuma" {
