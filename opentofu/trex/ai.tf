@@ -126,7 +126,7 @@ resource "docker_container" "openwebui" {
 # Apache Tika – Document Text Extraction (RAG ingest)
 # ---------------------------------------------------------------------------
 resource "docker_image" "tika" {
-  name = "apache/tika:3.3.0.0-full"
+  name = "apache/tika:3.3.1.0-full"
 }
 
 resource "docker_container" "tika" {

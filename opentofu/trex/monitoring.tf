@@ -2,7 +2,7 @@
 # Dozzle – Container Log Viewer
 # ---------------------------------------------------------------------------
 resource "docker_image" "dozzle" {
-  name = "amir20/dozzle:v10.6.1"
+  name = "amir20/dozzle:v10.6.3"
 }
 
 resource "docker_container" "dozzle" {
@@ -214,7 +214,7 @@ resource "docker_container" "tailscale_uptime_kuma" {
 # Shares the Tailscale sidecar's network namespace; accessible via tailnet.
 # ---------------------------------------------------------------------------
 resource "docker_image" "uptime_kuma" {
-  name = "louislam/uptime-kuma:2.3.2"
+  name = "louislam/uptime-kuma:2.4.0"
 }
 
 resource "docker_container" "uptime_kuma" {
