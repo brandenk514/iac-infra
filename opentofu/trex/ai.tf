@@ -2,7 +2,7 @@
 # Ollama – Local LLM Runtime
 # ---------------------------------------------------------------------------
 resource "docker_image" "ollama" {
-  name = "ollama/ollama:0.30.0"
+  name = "ollama/ollama:0.30.4"
 }
 
 resource "docker_container" "ollama" {
