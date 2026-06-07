@@ -26,6 +26,12 @@ variable "docker_mnt" {
   default     = "/opt"
 }
 
+variable "tdarr_transcode_cache" {
+  description = "Host path for the dedicated Tdarr transcode cache"
+  type        = string
+  default     = "/mnt/transcode-cache"
+}
+
 # ---------------------------------------------------------------------------
 # Cloudflared Tunnel
 # ---------------------------------------------------------------------------
@@ -33,6 +39,42 @@ variable "cloudflared_token" {
   description = "Cloudflare tunnel token"
   type        = string
   sensitive   = true
+}
+
+# ---------------------------------------------------------------------------
+# General
+# ---------------------------------------------------------------------------
+variable "timezone" {
+  description = "Timezone for containers"
+  type        = string
+  default     = "America/Denver"
+}
+
+variable "puid" {
+  description = "User ID for containers"
+  type        = string
+  default     = "1000"
+}
+
+variable "pgid" {
+  description = "Group ID for containers"
+  type        = string
+  default     = "1000"
+}
+
+# ---------------------------------------------------------------------------
+# NFS / Media
+# ---------------------------------------------------------------------------
+variable "media_server" {
+  description = "IP address of the NFS media server"
+  type        = string
+  default     = "192.168.105.20"
+}
+
+variable "media_library_mnt" {
+  description = "NFS export path for the media library"
+  type        = string
+  default     = ":/mnt/backup_pool/media-backup-pool"
 }
 
 # ---------------------------------------------------------------------------
