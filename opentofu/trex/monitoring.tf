@@ -43,48 +43,6 @@ resource "docker_container" "dozzle" {
 }
 
 # ---------------------------------------------------------------------------
-# Beszel – Server Monitoring Dashboard
-# ---------------------------------------------------------------------------
-resource "docker_image" "beszel" {
-  name = "henrygd/beszel:0.18.7"
-}
-
-resource "docker_container" "beszel" {
-  name    = "beszel"
-  image   = docker_image.beszel.image_id
-  restart = "unless-stopped"
-
-  networks_advanced {
-    name    = docker_network.proxy.id
-    aliases = ["beszel"]
-  }
-
-  volumes {
-    host_path      = "${var.docker_mnt}/beszel_data"
-    container_path = "/beszel_data"
-  }
-  volumes {
-    host_path      = "${var.docker_mnt}/beszel_socket"
-    container_path = "/beszel_socket"
-  }
-
-  dynamic "labels" {
-    for_each = {
-      "traefik.enable"                                     = "true"
-      "traefik.http.routers.beszel.rule"                   = "Host(`monitor.local.uaccloud.com`)"
-      "traefik.http.services.beszel.loadbalancer.server.port" = "8090"
-      "traefik.http.routers.beszel.tls"                    = "true"
-      "traefik.http.routers.beszel.tls.certresolver"       = "cloudflare"
-      "traefik.http.routers.beszel.entrypoints"            = "websecure"
-    }
-    content {
-      label = labels.key
-      value = labels.value
-    }
-  }
-}
-
-# ---------------------------------------------------------------------------
 # Beszel Agent – Monitoring Agent (NVIDIA-enabled)
 # ---------------------------------------------------------------------------
 resource "docker_image" "beszel_agent" {
