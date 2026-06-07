@@ -46,8 +46,8 @@ resource "docker_container" "beszel_agent" {
     container_path = "/dev/dri/card1"
   }
   devices {
-    host_path      = "/dev/nvme0n1"
-    container_path = "/dev/nvme0n1"
+    host_path      = "/dev/nvme0"
+    container_path = "/dev/nvme0"
   }
   devices {
     host_path      = "/dev/sda"
