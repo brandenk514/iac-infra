@@ -280,8 +280,13 @@ resource "docker_container" "jellyfin" {
   restart = "unless-stopped"
 
   devices {
-    host_path      = "/dev/dri"
-    container_path = "/dev/dri"
+    host_path      = "/dev/dri/renderD129"
+    container_path = "/dev/dri/renderD129"
+  }
+
+  devices {
+    host_path      = "/dev/dri/card1"
+    container_path = "/dev/dri/card1"
   }
 
   networks_advanced {
