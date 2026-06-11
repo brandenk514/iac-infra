@@ -82,7 +82,7 @@ resource "docker_container" "sonarr" {
     container_path = "/kids-tv"
   }
   volumes {
-    host_path      = var.tovpn_mnt
+    host_path      = docker_volume.tovpn_repo_nfs.name
     container_path = "/downloads"
   }
 
@@ -134,7 +134,7 @@ resource "docker_container" "radarr" {
     container_path = "/movies"
   }
   volumes {
-    host_path      = var.tovpn_mnt
+    host_path      = docker_volume.tovpn_repo_nfs.name
     container_path = "/downloads"
   }
 
@@ -186,7 +186,7 @@ resource "docker_container" "lidarr" {
     container_path = "/music"
   }
   volumes {
-    host_path      = var.tovpn_mnt
+    host_path      = docker_volume.tovpn_repo_nfs.name
     container_path = "/downloads"
   }
 
@@ -466,7 +466,7 @@ resource "docker_container" "lazylibrarian" {
     container_path = "/config"
   }
   volumes {
-    host_path      = var.tovpn_mnt
+    host_path      = docker_volume.tovpn_repo_nfs.name
     container_path = "/downloads"
   }
   volumes {
