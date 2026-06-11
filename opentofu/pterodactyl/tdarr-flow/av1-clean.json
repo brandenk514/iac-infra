@@ -157,7 +157,7 @@
       }
     },
     {
-      "name": "Is Nvidia (NVENC) Worker?",
+      "name": "Is Intel (QSV) Worker?",
       "sourceRepo": "Community",
       "pluginName": "checkFlowVariable",
       "version": "1.0.0",
@@ -652,12 +652,12 @@
       }
     },
     {
-      "name": "Check Nvidia (NVENC)",
+      "name": "Check Intel (QSV)",
       "sourceRepo": "Community",
       "pluginName": "checkNodeHardwareEncoder",
       "version": "1.0.0",
       "inputsDB": {
-        "hardwareEncoder": "hevc_nvenc"
+        "hardwareEncoder": "hevc_qsv"
       },
       "fpEnabled": true,
       "id": "Np8IKYx6p",

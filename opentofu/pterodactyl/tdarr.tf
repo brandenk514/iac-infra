@@ -12,7 +12,7 @@ resource "docker_container" "tdarr" {
   hostname = "tdarr"
 
   networks_advanced {
-    name    = docker_network.tdarr.id
+    name    = docker_network.proxy.id
     aliases = ["tdarr"]
   }
 
@@ -119,5 +119,20 @@ resource "docker_container" "tdarr_node" {
   log_driver = "json-file"
   log_opts = {
     "max-size" = "10m"
+  }
+
+  dynamic "labels" {
+    for_each = {
+      "traefik.enable"                                        = "true"
+      "traefik.http.routers.tdarr.rule"                      = "Host(`tdarr.local.uaccloud.com`)"
+      "traefik.http.routers.tdarr.entrypoints"               = "websecure"
+      "traefik.http.services.tdarr.loadbalancer.server.port" = "8265"
+      "traefik.http.routers.tdarr.tls"                       = "true"
+      "traefik.http.routers.tdarr.tls.certresolver"          = "cloudflare"
+    }
+    content {
+      label = labels.key
+      value = labels.value
+    }
   }
 }

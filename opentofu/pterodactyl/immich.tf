@@ -10,9 +10,9 @@ resource "docker_container" "immich_server" {
   image   = docker_image.immich_server.image_id
   restart = "unless-stopped"
 
-  device_requests {
-    driver     = "cdi"
-    device_ids = ["nvidia.com/gpu=all"]
+  devices {
+    host_path      = "/dev/dri/renderD129"
+    container_path = "/dev/dri/renderD129"
   }
 
   networks_advanced {
@@ -42,6 +42,7 @@ resource "docker_container" "immich_server" {
     "DB_HOSTNAME=immich_postgres",
     "REDIS_HOSTNAME=immich_redis",
     "TZ=${var.timezone}",
+    "LIBVA_DRIVER_NAME=iHD",
   ]
 
   depends_on = [
@@ -78,9 +79,9 @@ resource "docker_container" "immich_ml" {
   image   = docker_image.immich_ml.image_id
   restart = "unless-stopped"
 
-  device_requests {
-    driver     = "cdi"
-    device_ids = ["nvidia.com/gpu=all"]
+  devices {
+    host_path      = "/dev/dri/renderD129"
+    container_path = "/dev/dri/renderD129"
   }
 
   networks_advanced {
@@ -100,6 +101,7 @@ resource "docker_container" "immich_ml" {
     "DB_HOSTNAME=immich_postgres",
     "REDIS_HOSTNAME=immich_redis",
     "TZ=${var.timezone}",
+    "LIBVA_DRIVER_NAME=iHD",
   ]
 }
 

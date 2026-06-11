@@ -19,7 +19,7 @@ Each stack uses the [kreuzwerker/docker](https://registry.terraform.io/providers
 | Monitoring | Beszel, Beszel Agent, Dozzle, Uptime Kuma |
 | AI / RAG | Ollama, Open WebUI, Tika, SearXNG, Infinity, Open Terminal |
 
-Jellyfin, Immich ML, Ollama, Open WebUI, and Infinity use NVIDIA hardware acceleration via the CDI device spec.
+Jellyfin, Immich ML, Ollama, Open WebUI, and Infinity use Intel hardware acceleration via the CDI device spec.
 
 **[`opentofu/nanosaurus/`](opentofu/nanosaurus/)** — dedicated Tdarr transcode server with Intel A310 QSV hardware acceleration; ships a Beszel agent for monitoring.
 
