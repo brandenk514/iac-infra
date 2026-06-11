@@ -16,15 +16,6 @@ resource "docker_container" "tdarr" {
     aliases = ["tdarr"]
   }
 
-  ports {
-    internal = 8265
-    external = 8265
-  }
-  ports {
-    internal = 8266
-    external = 8266
-  }
-
   env = [
     "PUID=${var.puid}",
     "PGID=${var.pgid}",
@@ -34,6 +25,21 @@ resource "docker_container" "tdarr" {
     "webUIPort=8265",
     "internalNode=false",
   ]
+
+  dynamic "labels" {
+    for_each = {
+      "traefik.enable"                                       = "true"
+      "traefik.http.routers.tdarr.rule"                      = "Host(`tdarr.local.uaccloud.com`)"
+      "traefik.http.routers.tdarr.entrypoints"               = "websecure"
+      "traefik.http.services.tdarr.loadbalancer.server.port" = "8265"
+      "traefik.http.routers.tdarr.tls"                       = "true"
+      "traefik.http.routers.tdarr.tls.certresolver"          = "cloudflare"
+    }
+    content {
+      label = labels.key
+      value = labels.value
+    }
+  }
 
   volumes {
     host_path      = "${var.docker_mnt}/tdarr/server"
@@ -123,20 +129,5 @@ resource "docker_container" "tdarr_node" {
   log_driver = "json-file"
   log_opts = {
     "max-size" = "10m"
-  }
-
-  dynamic "labels" {
-    for_each = {
-      "traefik.enable"                                        = "true"
-      "traefik.http.routers.tdarr.rule"                      = "Host(`tdarr.local.uaccloud.com`)"
-      "traefik.http.routers.tdarr.entrypoints"               = "websecure"
-      "traefik.http.services.tdarr.loadbalancer.server.port" = "8265"
-      "traefik.http.routers.tdarr.tls"                       = "true"
-      "traefik.http.routers.tdarr.tls.certresolver"          = "cloudflare"
-    }
-    content {
-      label = labels.key
-      value = labels.value
-    }
   }
 }

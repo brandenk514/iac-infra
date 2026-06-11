@@ -278,11 +278,11 @@ resource "docker_container" "jellyfin" {
   name    = "jellyfin"
   image   = docker_image.jellyfin.image_id
   restart = "unless-stopped"
-  
+
   devices {
-  host_path      = "/dev/dri"
-  container_path = "/dev/dri"
-}
+    host_path      = "/dev/dri"
+    container_path = "/dev/dri"
+  }
 
   networks_advanced {
     name    = docker_network.proxy.id
@@ -568,7 +568,7 @@ resource "docker_container" "houndarr" {
 
   dynamic "labels" {
     for_each = {
-      "traefik.enable"                                           = "true"
+      "traefik.enable"                                          = "true"
       "traefik.http.routers.houndarr.rule"                      = "Host(`houndarr.local.uaccloud.com`)"
       "traefik.http.routers.houndarr.entrypoints"               = "websecure"
       "traefik.http.services.houndarr.loadbalancer.server.port" = "8877"
