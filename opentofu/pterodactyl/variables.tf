@@ -33,6 +33,21 @@ variable "tdarr_transcode_cache" {
 }
 
 # ---------------------------------------------------------------------------
+# NFS / Media
+# ---------------------------------------------------------------------------
+variable "media_server" {
+  description = "IP address of the NFS media server"
+  type        = string
+  default     = "192.168.105.4"
+}
+
+variable "media_library_mnt" {
+  description = "NFS export path for the media library"
+  type        = string
+  default     = ":/volume1/media-library"
+}
+
+# ---------------------------------------------------------------------------
 # Cloudflared Tunnel
 # ---------------------------------------------------------------------------
 variable "cloudflared_token" {
