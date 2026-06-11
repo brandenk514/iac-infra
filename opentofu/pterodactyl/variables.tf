@@ -23,13 +23,13 @@ variable "ssh_port" {
 variable "docker_mnt" {
   description = "Base path for container persistent storage"
   type        = string
-  default     = "/opt"
+  default     = "/mnt/r5-dstor/containers"
 }
 
 variable "tdarr_transcode_cache" {
   description = "Host path for the dedicated Tdarr transcode cache"
   type        = string
-  default     = "/mnt/transcode-cache"
+  default     = "/mnt/r5-dstor/transcode-cache"
 }
 
 # ---------------------------------------------------------------------------
@@ -63,21 +63,6 @@ variable "pgid" {
 }
 
 # ---------------------------------------------------------------------------
-# NFS / Media
-# ---------------------------------------------------------------------------
-variable "media_server" {
-  description = "IP address of the NFS media server"
-  type        = string
-  default     = "192.168.105.20"
-}
-
-variable "media_library_mnt" {
-  description = "NFS export path for the media library"
-  type        = string
-  default     = ":/mnt/backup_pool/media-backup-pool"
-}
-
-# ---------------------------------------------------------------------------
 # Beszel Agent
 # ---------------------------------------------------------------------------
 variable "beszel_agent_hub_url" {
@@ -96,35 +81,6 @@ variable "beszel_agent_token" {
   description = "Auth token for Beszel agent"
   type        = string
   sensitive   = true
-}
-##########################################################################
-
-# ---------------------------------------------------------------------------
-# SSH Connection
-# ---------------------------------------------------------------------------
-variable "ssh_user" {
-  description = "SSH user for the remote Docker host"
-  type        = string
-}
-
-variable "ssh_host" {
-  description = "Hostname or IP of the remote Docker host"
-  type        = string
-}
-
-variable "ssh_port" {
-  description = "SSH port on the remote host"
-  type        = number
-  default     = 22
-}
-
-# ---------------------------------------------------------------------------
-# Paths
-# ---------------------------------------------------------------------------
-variable "docker_mnt" {
-  description = "Base path for container persistent storage"
-  type        = string
-  default     = "/mnt/r5-dstor/containers"
 }
 
 # ---------------------------------------------------------------------------
@@ -193,58 +149,4 @@ variable "upload_location" {
   description = "Host path for Immich media uploads"
   type        = string
   default     = "/mnt/r5-dstor/containers/immich-repo/upload"
-}
-
-# ---------------------------------------------------------------------------
-# NFS / Media
-# ---------------------------------------------------------------------------
-variable "media_server" {
-  description = "IP address of the NFS media server"
-  type        = string
-  default     = "192.168.105.20"
-}
-
-variable "media_library_mnt" {
-  description = "NFS export path for the media library"
-  type        = string
-  default     = ":/mnt/backup_pool/media-backup-pool"
-}
-
-# ---------------------------------------------------------------------------
-# Beszel
-# ---------------------------------------------------------------------------
-variable "beszel_agent_hub_url" {
-  description = "Beszel hub URL for the agent"
-  type        = string
-  default     = "https://monitor.local.uaccloud.com"
-}
-
-variable "beszel_agent_key" {
-  description = "SSH public key for Beszel agent auth"
-  type        = string
-  sensitive   = true
-}
-
-variable "beszel_agent_token" {
-  description = "Auth token for Beszel agent"
-  type        = string
-  sensitive   = true
-}
-
-# ---------------------------------------------------------------------------
-# Open WebUI
-# ---------------------------------------------------------------------------
-variable "webui_secret_key" {
-  description = "Secret key for Open WebUI"
-  type        = string
-  sensitive   = true
-}
-
-# ---------------------------------------------------------------------------
-# Open Terminal
-# ---------------------------------------------------------------------------
-variable "open_terminal_api_key" {
-  description = "API key for Open Terminal"
-  type        = string
-  sensitive   = true
 }
