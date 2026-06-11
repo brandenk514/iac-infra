@@ -12,7 +12,7 @@ resource "docker_container" "tdarr" {
   hostname = "tdarr"
 
   networks_advanced {
-    name    = docker_network.tdarr.id
+    name    = docker_network.proxy.id
     aliases = ["tdarr"]
   }
 
