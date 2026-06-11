@@ -280,8 +280,8 @@ resource "docker_container" "jellyfin" {
   restart = "unless-stopped"
 
   devices {
-    host_path      = "/dev/dri/renderD128"
-    container_path = "/dev/dri/renderD128"
+    host_path      = "/dev/dri/"
+    container_path = "/dev/dri/"
   }
 
   networks_advanced {
@@ -294,7 +294,8 @@ resource "docker_container" "jellyfin" {
     "PGID=${var.pgid}",
     "TZ=${var.timezone}",
     "JELLYFIN_PublishedServerUrl=https://watch.uaccloud.com",
-    "LIBVA_DRIVER_NAME=iHD",
+    "LIBVA_DRIVER_NAME=iHD"
+    "DOCKER_MODS=linuxserver/mods:jellyfin-opencl",
   ]
 
   volumes {

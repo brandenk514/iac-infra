@@ -89,17 +89,15 @@ resource "docker_container" "tdarr_node" {
     "serverPort=8266",
     "nodeName=a310-node",
     "LIBVA_DRIVER_NAME=iHD",
-    "DOCKER_MODS=linuxserver/mods:jellyfin-opencl"
   ]
 
   # Intel A310 — mount the A310's render node at its native path. Remapping
   # to renderD128 breaks libva's DRM topology lookup (vaGetDisplayDRM returns
   # NULL). Tdarr flow plugins must point QSV/VAAPI at /dev/dri/renderD129.
   devices {
-    host_path      = "/dev/dri/"
-    container_path = "/dev/dri/"
+    host_path      = "/dev/dri/renderD129"
+    container_path = "/dev/dri/renderD129"
   }
-
 
   volumes {
     host_path      = "${var.docker_mnt}/tdarr/configs"
