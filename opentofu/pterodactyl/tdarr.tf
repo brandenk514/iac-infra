@@ -96,13 +96,10 @@ resource "docker_container" "tdarr_node" {
   # to renderD128 breaks libva's DRM topology lookup (vaGetDisplayDRM returns
   # NULL). Tdarr flow plugins must point QSV/VAAPI at /dev/dri/renderD129.
   devices {
-    host_path      = "/dev/dri/renderD128"
-    container_path = "/dev/dri/renderD128"
+    host_path      = "/dev/dri/"
+    container_path = "/dev/dri/"
   }
-  devices {
-    host_path      = "/dev/dri/renderD129"
-    container_path = "/dev/dri/renderD129"
-  }
+
 
   volumes {
     host_path      = "${var.docker_mnt}/tdarr/configs"
