@@ -229,7 +229,7 @@ resource "docker_container" "tovpn" {
   }
 
   volumes {
-    volume_name    = docker_volume.tovpn_mnt.name
+    volume_name    = docker_volume.tovpn_repo_nfs.name
     container_path = "/data"
   }
   volumes {
