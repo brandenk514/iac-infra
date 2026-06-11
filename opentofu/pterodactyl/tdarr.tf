@@ -89,6 +89,7 @@ resource "docker_container" "tdarr_node" {
     "serverPort=8266",
     "nodeName=a310-node",
     "LIBVA_DRIVER_NAME=iHD",
+    "DOCKER_MODS=linuxserver/mods:jellyfin-opencl"
   ]
 
   # Intel A310 — mount the A310's render node at its native path. Remapping
