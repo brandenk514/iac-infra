@@ -279,9 +279,9 @@ resource "docker_container" "jellyfin" {
   image   = docker_image.jellyfin.image_id
   restart = "unless-stopped"
 
-  device_requests {
-    driver     = "cdi"
-    device_ids = ["nvidia.com/gpu=all"]
+  devices {
+    host_path      = "/dev/dri/renderD129"
+    container_path = "/dev/dri/renderD129"
   }
 
   networks_advanced {
@@ -294,8 +294,7 @@ resource "docker_container" "jellyfin" {
     "PGID=${var.pgid}",
     "TZ=${var.timezone}",
     "JELLYFIN_PublishedServerUrl=https://watch.uaccloud.com",
-    "NVIDIA_VISIBLE_DEVICES=all",
-    "NVIDIA_DRIVER_CAPABILITIES=all",
+    "LIBVA_DRIVER_NAME=iHD",
   ]
 
   volumes {
