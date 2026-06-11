@@ -32,7 +32,7 @@ resource "docker_volume" "tovpn_repo_nfs" {
   driver_opts = {
     type   = "nfs4"
     o      = "addr=${var.media_server},rw"
-    device = var.tovpn_mnt
+    device = var.tovpn_repo_mnt
   }
 }
 
