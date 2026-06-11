@@ -278,16 +278,11 @@ resource "docker_container" "jellyfin" {
   name    = "jellyfin"
   image   = docker_image.jellyfin.image_id
   restart = "unless-stopped"
-
+  
   devices {
-    host_path      = "/dev/dri/renderD129"
-    container_path = "/dev/dri/renderD129"
-  }
-
-  devices {
-    host_path      = "/dev/dri/card1"
-    container_path = "/dev/dri/card1"
-  }
+  host_path      = "/dev/dri"
+  container_path = "/dev/dri"
+}
 
   networks_advanced {
     name    = docker_network.proxy.id
