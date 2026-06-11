@@ -67,7 +67,6 @@ resource "docker_container" "tdarr" {
 # ---------------------------------------------------------------------------
 resource "docker_image" "tdarr_node" {
   name = "ghcr.io/haveagitgat/tdarr_node:2.77.01"
-
 }
 
 resource "docker_container" "tdarr_node" {
@@ -97,6 +96,11 @@ resource "docker_container" "tdarr_node" {
   devices {
     host_path      = "/dev/dri/renderD129"
     container_path = "/dev/dri/renderD129"
+  }
+
+  devices {
+    host_path      = "/dev/dri/card1"
+    container_path = "/dev/dri/card1"
   }
 
   volumes {
