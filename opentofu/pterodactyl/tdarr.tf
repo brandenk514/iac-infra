@@ -29,6 +29,7 @@ resource "docker_container" "tdarr" {
   dynamic "labels" {
     for_each = {
       "traefik.enable"                                       = "true"
+      "traefik.docker.network"                               = "proxy"
       "traefik.http.routers.tdarr.rule"                      = "Host(`tdarr.local.uaccloud.com`)"
       "traefik.http.routers.tdarr.entrypoints"               = "websecure"
       "traefik.http.services.tdarr.loadbalancer.server.port" = "8265"
