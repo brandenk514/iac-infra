@@ -47,6 +47,12 @@ variable "media_library_mnt" {
   default     = ":/volume1/media-library"
 }
 
+variable "tovpn_mnt" {
+  description = "Path to the transmission/VPN download directory"
+  type        = string
+  default     = ":/volume1/tovpn-repo"
+}
+
 # ---------------------------------------------------------------------------
 # Cloudflared Tunnel
 # ---------------------------------------------------------------------------
