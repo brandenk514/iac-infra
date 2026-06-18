@@ -25,7 +25,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: tailscale/github-action@v4
         with:
@@ -99,7 +99,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: tailscale/github-action@v4
         with:
