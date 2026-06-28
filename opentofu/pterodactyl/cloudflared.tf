@@ -28,7 +28,7 @@ resource "docker_image" "cloudflared" {
 }
 
 resource "docker_container" "cloudflared" {
-  name     = "cloudflared"
+  name     = "2gt_cloudflared"
   image    = docker_image.cloudflared.image_id
   restart  = "unless-stopped"
   hostname = "cloudflared"
