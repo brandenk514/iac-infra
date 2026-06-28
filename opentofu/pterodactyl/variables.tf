@@ -62,6 +62,12 @@ variable "cloudflared_token" {
   sensitive   = true
 }
 
+variable "twogt_cloudflared_token" {
+  description = "Cloudflare tunnel token"
+  type        = string
+  sensitive   = true
+}
+
 # ---------------------------------------------------------------------------
 # General
 # ---------------------------------------------------------------------------
