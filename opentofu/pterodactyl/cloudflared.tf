@@ -24,11 +24,11 @@ resource "docker_container" "cloudflared" {
 # 2GT Cloudflared – Cloudflare Tunnel
 # ---------------------------------------------------------------------------
 
-resource "docker_container" "cloudflared" {
+resource "docker_container" "twogt_cloudflared" {
   name     = "2gt_cloudflared"
   image    = docker_image.cloudflared.image_id
   restart  = "unless-stopped"
-  hostname = "cloudflared"
+  hostname = "2gt_cloudflared"
 
   command = [
     "tunnel",
