@@ -57,27 +57,6 @@ jobs:
           TFVARS: ${{ secrets.TF_TFVARS_PTERODACTYL }}
         run: printf '%s' "$TFVARS" > terraform.tfvars
 
-      - name: Export SSH target
-        run: |
-          python3 - <<'PY' >> $GITHUB_ENV
-          import re
-          data = open('terraform.tfvars').read()
-          for key in ('ssh_user', 'ssh_host', 'ssh_port'):
-              match = re.search(r'^\s*' + key + r'\s*=\s*["\']?([^"\']+)["\']?', data, re.M)
-              if not match:
-                  raise SystemExit(f'Missing {key} in terraform.tfvars')
-              print(f'{key.upper()}={match.group(1)}')
-          PY
-
-      - name: Docker Hub login on remote host
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-        run: |
-          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" <<'EOF'
-          echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-          EOF
-
       - name: Tofu init
         run: |
           tofu init \
@@ -151,27 +130,6 @@ jobs:
         env:
           TFVARS: ${{ secrets.TF_TFVARS_PTERODACTYL }}
         run: printf '%s' "$TFVARS" > terraform.tfvars
-
-      - name: Export SSH target
-        run: |
-          python3 - <<'PY' >> $GITHUB_ENV
-          import re
-          data = open('terraform.tfvars').read()
-          for key in ('ssh_user', 'ssh_host', 'ssh_port'):
-              match = re.search(r'^\s*' + key + r'\s*=\s*["\']?([^"\']+)["\']?', data, re.M)
-              if not match:
-                  raise SystemExit(f'Missing {key} in terraform.tfvars')
-              print(f'{key.upper()}={match.group(1)}')
-          PY
-
-      - name: Docker Hub login on remote host
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-        run: |
-          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" <<'EOF'
-          echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-          EOF
 
       - name: Tofu init
         run: |
