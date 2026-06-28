@@ -498,52 +498,6 @@ resource "docker_container" "lazylibrarian" {
 }
 
 # ---------------------------------------------------------------------------
-# Archive Team Warrior
-# ---------------------------------------------------------------------------
-resource "docker_image" "archiveteam_warrior" {
-  name = "atdr.meo.ws/archiveteam/warrior-dockerfile:latest@sha256:ef212e47037a8de8425cc3f56629890d3e0aad7b630ddbc8aff0189e3efa2e37"
-}
-
-resource "docker_container" "archiveteam_warrior" {
-  name    = "archiveteam-warrior"
-  image   = docker_image.archiveteam_warrior.image_id
-  restart = "unless-stopped"
-
-  networks_advanced {
-    name    = docker_network.proxy.id
-    aliases = ["archiveteam-warrior"]
-  }
-
-  log_driver = "json-file"
-  log_opts = {
-    "max-size" = "50m"
-  }
-
-  env = [
-    "DOWNLOADER=bking2142",
-    "SELECTED_PROJECT=auto",
-    "CONCURRENT_ITEMS=6",
-    "SHARED_RSYNC_THREADS=6",
-    "WARRIOR_ID=-bking2142",
-  ]
-
-  dynamic "labels" {
-    for_each = {
-      "traefik.enable"                                                     = "true"
-      "traefik.http.routers.archiveteam-warrior.rule"                      = "Host(`archive.local.uaccloud.com`)"
-      "traefik.http.services.archiveteam-warrior.loadbalancer.server.port" = "8001"
-      "traefik.http.routers.archiveteam-warrior.tls"                       = "true"
-      "traefik.http.routers.archiveteam-warrior.tls.certresolver"          = "cloudflare"
-      "traefik.http.routers.archiveteam-warrior.entrypoints"               = "websecure"
-    }
-    content {
-      label = labels.key
-      value = labels.value
-    }
-  }
-}
-
-# ---------------------------------------------------------------------------
 # Houndarr – Media Tracker
 # ---------------------------------------------------------------------------
 resource "docker_image" "houndarr" {
