@@ -240,6 +240,8 @@ resource "docker_container" "tovpn" {
   env = [
     "PUID=${var.puid}",
     "PGID=${var.pgid}",
+    "TZ=${var.timezone}",
+    "UMASK=002",
     "OPENVPN_PROVIDER=NORDVPN",
     "OPENVPN_CONFIG=",
     "OPENVPN_USERNAME=${var.openvpn_username}",
