@@ -2,7 +2,7 @@
 # 2GT Website
 # ---------------------------------------------------------------------------
 resource "docker_image" "twogt_website" {
-    name = "2gtbk/2gt_website:latest"
+    name = "docker.io/2gtbk/2gt_website:latest"
 }
 
 resource "docker_container" "twogt_website" {

@@ -89,6 +89,18 @@ variable "pgid" {
   default     = "1000"
 }
 
+variable "dockerhub_username" {
+  description = "Docker Hub username for pulling private images"
+  type        = string
+  sensitive   = true
+}
+
+variable "dockerhub_password" {
+  description = "Docker Hub password or access token for pulling private images"
+  type        = string
+  sensitive   = true
+}
+
 # ---------------------------------------------------------------------------
 # Beszel Agent
 # ---------------------------------------------------------------------------
