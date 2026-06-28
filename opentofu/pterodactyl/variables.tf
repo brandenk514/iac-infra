@@ -62,12 +62,6 @@ variable "cloudflared_token" {
   sensitive   = true
 }
 
-variable "twogt_cloudflared_token" {
-  description = "Cloudflare tunnel token"
-  type        = string
-  sensitive   = true
-}
-
 # ---------------------------------------------------------------------------
 # General
 # ---------------------------------------------------------------------------
@@ -87,18 +81,6 @@ variable "pgid" {
   description = "Group ID for containers"
   type        = string
   default     = "1000"
-}
-
-variable "dockerhub_username" {
-  description = "Docker Hub username for pulling private images"
-  type        = string
-  sensitive   = true
-}
-
-variable "dockerhub_password" {
-  description = "Docker Hub password or access token for pulling private images"
-  type        = string
-  sensitive   = true
 }
 
 # ---------------------------------------------------------------------------
