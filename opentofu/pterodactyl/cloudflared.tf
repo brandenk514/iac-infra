@@ -23,9 +23,6 @@ resource "docker_container" "cloudflared" {
 # ---------------------------------------------------------------------------
 # 2GT Cloudflared – Cloudflare Tunnel
 # ---------------------------------------------------------------------------
-resource "docker_image" "cloudflared" {
-  name = "cloudflare/cloudflared:2026.6.1"
-}
 
 resource "docker_container" "cloudflared" {
   name     = "2gt_cloudflared"
