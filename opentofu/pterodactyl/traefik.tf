@@ -2,7 +2,7 @@
 # Traefik – Reverse Proxy
 # ---------------------------------------------------------------------------
 resource "docker_image" "traefik" {
-  name = "docker.io/library/traefik:v3.7.6"
+  name = "docker.io/library/traefik:v3.7.7"
 }
 
 resource "docker_container" "traefik" {
