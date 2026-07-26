@@ -505,7 +505,7 @@ resource "docker_container" "lazylibrarian" {
 # Maintainerr – Media Library Cleanup
 # ---------------------------------------------------------------------------
 resource "docker_image" "maintainerr" {
-name = "ghcr.io/maintainerr/maintainerr:v3.18.0"
+name = "ghcr.io/maintainerr/maintainerr:latest"
 }
 
 resource "docker_container" "maintainerr" {
