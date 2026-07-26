@@ -512,6 +512,7 @@ resource "docker_container" "maintainerr" {
 name    = "maintainerr"
 image   = docker_image.maintainerr.image_id
 restart = "unless-stopped"
+user    = "1000:1000"
 
 networks_advanced {
 name    = docker_network.proxy.id
