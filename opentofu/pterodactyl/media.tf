@@ -502,45 +502,51 @@ resource "docker_container" "lazylibrarian" {
 }
 
 # ---------------------------------------------------------------------------
-# Houndarr – Media Tracker
+# Maintainerr – Media Library Cleanup
 # ---------------------------------------------------------------------------
-resource "docker_image" "houndarr" {
-  name = "ghcr.io/av1155/houndarr:latest"
+resource "docker_image" "maintainerr" {
+name = "ghcr.io/maintainerr/maintainerr:v3.18.0"
 }
 
-resource "docker_container" "houndarr" {
-  name    = "houndarr"
-  image   = docker_image.houndarr.image_id
-  restart = "unless-stopped"
+resource "docker_container" "maintainerr" {
+name    = "maintainerr"
+image   = docker_image.maintainerr.image_id
+restart = "unless-stopped"
 
-  networks_advanced {
-    name    = docker_network.proxy.id
-    aliases = ["houndarr"]
+networks_advanced {
+name    = docker_network.proxy.id
+aliases = ["maintainerr"]
   }
 
-  env = [
-    "PUID=${var.puid}",
-    "PGID=${var.pgid}",
-    "TZ=${var.timezone}",
+env = [
+"TZ=${var.timezone}",
   ]
 
-  volumes {
-    host_path      = "${var.docker_mnt}/houndarr/data"
-    container_path = "/data"
+volumes {
+host_path      = "${var.docker_mnt}/maintainerr/data"
+container_path = "/opt/data"
   }
 
-  dynamic "labels" {
-    for_each = {
-      "traefik.enable"                                          = "true"
-      "traefik.http.routers.houndarr.rule"                      = "Host(`houndarr.local.uaccloud.com`)"
-      "traefik.http.routers.houndarr.entrypoints"               = "websecure"
-      "traefik.http.services.houndarr.loadbalancer.server.port" = "8877"
-      "traefik.http.routers.houndarr.tls"                       = "true"
-      "traefik.http.routers.houndarr.tls.certresolver"          = "cloudflare"
+healthcheck {
+test         = ["CMD", "/opt/app/healthcheck.sh"]
+interval     = "30s"
+timeout      = "5s"
+start_period = "40s"
+retries      = 3
+  }
+
+dynamic "labels" {
+for_each = {
+"traefik.enable"                                              = "true"
+"traefik.http.routers.maintainerr.rule"                       = "Host(`maintainerr.local.uaccloud.com`)"
+"traefik.http.routers.maintainerr.entrypoints"                = "websecure"
+"traefik.http.services.maintainerr.loadbalancer.server.port"  = "6246"
+"traefik.http.routers.maintainerr.tls"                        = "true"
+"traefik.http.routers.maintainerr.tls.certresolver"           = "cloudflare"
     }
-    content {
-      label = labels.key
-      value = labels.value
+content {
+label = labels.key
+value = labels.value
     }
   }
 }
