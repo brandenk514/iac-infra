@@ -2,7 +2,7 @@
 # Cloudflared – Cloudflare Tunnel
 # ---------------------------------------------------------------------------
 resource "docker_image" "cloudflared" {
-  name = "cloudflare/cloudflared:2026.7.3"
+  name = "cloudflare/cloudflared:2026.8.2"
 }
 
 resource "docker_container" "cloudflared" {
