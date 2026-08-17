@@ -210,7 +210,7 @@ resource "docker_container" "lidarr" {
 # Transmission over VPN (tovpn)
 # ---------------------------------------------------------------------------
 resource "docker_image" "tovpn" {
-  name = "haugene/transmission-openvpn:5.5.1"
+  name = "haugene/transmission-openvpn:5.5.2"
 }
 
 resource "docker_container" "tovpn" {
