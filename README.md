@@ -31,7 +31,6 @@ ansible/
 scripts/
 ├── stop-containers.sh   # Synology Active Backup pre-script
 ├── start-containers.sh  # Synology Active Backup post-script
-└── cleanup_on_full.sh   # purge configured dirs when a mount hits a usage threshold
 .github/workflows/
 └── tofu-deploy.yml   # plan + apply for pterodactyl stack
 ```
