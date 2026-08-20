@@ -6,22 +6,7 @@ Homelab infrastructure as code. OpenTofu manages containerized stacks over SSH; 
 
 ### OpenTofu
 
-Each stack uses the [kreuzwerker/docker](https://registry.terraform.io/providers/kreuzwerker/docker/latest) provider and connects to its target host with `ssh://`. Backend keys are isolated per stack so blast radius is one host at a time.
-
-**[`opentofu/trex/`](opentofu/trex/) — primary server**
-
-| Category | Containers |
-| --- | --- |
-| Proxy | Traefik |
-| Media | Sonarr, Radarr, Lidarr, Prowlarr, Jellyfin, Seerr, LazyLibrarian, Houndarr |
-| Downloads | Transmission-over-VPN, FlareSolverr, ArchiveTeam Warrior |
-| Photos | Immich (server + ML + Valkey + PostgreSQL) |
-| Monitoring | Beszel, Beszel Agent, Dozzle, Uptime Kuma |
-| AI / RAG | Ollama, Open WebUI, Tika, SearXNG, Infinity, Open Terminal |
-
-Jellyfin, Immich ML, Ollama, Open WebUI, and Infinity use Intel hardware acceleration via the CDI device spec.
-
-**[`opentofu/nanosaurus/`](opentofu/nanosaurus/)** — dedicated Tdarr transcode server with Intel A310 QSV hardware acceleration; ships a Beszel agent for monitoring.
+Each stack uses the [kreuzwerker/docker](https://registry.opentofu.org/providers/kreuzwerker/docker/latest) provider and connects to its target host with `ssh://`. Backend keys are isolated per stack so blast radius is one host at a time.
 
 **[`opentofu/pterodactyl/`](opentofu/pterodactyl/)** — Cloudflare Tunnel (`cloudflared`) container fronting the Pterodactyl game-server panel; ships a Beszel agent.
 
@@ -38,8 +23,6 @@ No host firewall is installed. Docker bypasses UFW by inserting its own iptables
 
 ```
 opentofu/
-├── trex/         # primary homelab server
-├── nanosaurus/   # transcode server (Tdarr + QSV)
 └── pterodactyl/  # cloudflared tunnel
 ansible/
 ├── roles/baseline/   # OS, SSH, Docker, Tailscale, unattended-upgrades
@@ -50,7 +33,7 @@ scripts/
 ├── start-containers.sh  # Synology Active Backup post-script
 └── cleanup_on_full.sh   # purge configured dirs when a mount hits a usage threshold
 .github/workflows/
-└── tofu-deploy.yml   # plan + gated apply per stack
+└── tofu-deploy.yml   # plan + apply for pterodactyl stack
 ```
 
 ## Usage
@@ -66,7 +49,7 @@ tofu plan
 tofu apply
 ```
 
-CI runs on push to `main` when files under `opentofu/**` change — see [.github/workflows/tofu-deploy.yml](.github/workflows/tofu-deploy.yml). Each stack has its own `*-plan` and `*-apply` jobs with its own B2 state key (`main/`, `tdarr/`, `pterodactyl/` — the `trex` and `nanosaurus` keys were kept post-rename to avoid orphaning state). Plan runs unconditionally and posts the diff to the job summary; apply is gated on the GitHub `production` environment, so an approver must release each stack. The runner joins the Tailnet via the Tailscale GitHub Action, writes the SSH key and per-stack `terraform.tfvars` from secrets, then runs `tofu init` + `tofu apply -auto-approve`.
+CI runs on push to `main` when files under `opentofu/**` change — see [.github/workflows/tofu-deploy.yml](.github/workflows/tofu-deploy.yml). The `pterodactyl` stack has its own `*-plan` and `*-apply` jobs with its own B2 state key (`pterodactyl/terraform.tfstate`). Plan runs unconditionally and posts the diff to the job summary; apply is gated on the GitHub `production` environment, so an approver must release each stack. The runner joins the Tailnet via the Tailscale GitHub Action, writes the SSH key and per-stack `terraform.tfvars` from secrets, then runs `tofu init` + `tofu apply -auto-approve`.
 
 > The `production` environment must be configured in repo Settings → Environments with **Required reviewers** enabled, otherwise the approval gate is a no-op.
 
@@ -78,8 +61,6 @@ Required secrets:
 | `B2_BUCKET`, `B2_REGION` | State bucket + region |
 | `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` | Tailscale OAuth for the CI runner |
 | `TF_SSH_KEY` | Private key for the Docker-host SSH user |
-| `TF_TFVARS_TREX` | tfvars content for `trex` |
-| `TF_TFVARS_NANO` | tfvars content for `nanosaurus` (name kept post-rename) |
 | `TF_TFVARS_PTERODACTYL` | tfvars content for `pterodactyl` |
 
 ### Ansible
@@ -131,6 +112,6 @@ Defaults live in [`ansible/group_vars/all.yml`](ansible/group_vars/all.yml) and 
 | `tailscale_authkey` | `""` | Auth key for `tailscale up`; empty installs only |
 | `tailscale_up_args` | `--ssh` | Extra flags passed to `tailscale up` |
 | `traefik_docker_mnt` | `/mnt/r5-dstor/containers` | Host container mount; the role writes config under `<mnt>/traefik/confs` and certs under `<mnt>/traefik/certs` |
-| `traefik_acme_email` | (set in defaults) | Email used for Let's Encrypt registration |
-| `traefik_cert_domains` | (set in defaults) | Domains/SANs requested via the Cloudflare DNS-01 challenge |
-| `traefik_entrypoints` | `web`/`websecure` + `external-web`/`external-websecure` | Listener definitions rendered into `traefik.yml` |
+| `traefik_acme_email` | `brandenk514@gmail.com` | Email used for Let's Encrypt registration |
+| `traefik_cert_domains` | (see defaults) | Domains/SANs requested via the Cloudflare DNS-01 challenge |
+| `traefik_entrypoints` | (see defaults) | Listener definitions rendered into `traefik.yml` |
