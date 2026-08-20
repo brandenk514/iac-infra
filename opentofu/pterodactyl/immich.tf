@@ -109,7 +109,7 @@ resource "docker_container" "immich_ml" {
 # Valkey – Cache for Immich (Redis-compatible)
 # ---------------------------------------------------------------------------
 resource "docker_image" "redis" {
-  name = "docker.io/valkey/valkey:9@sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411"
+  name = "docker.io/valkey/valkey:9@sha256:70739f85ad2ee01a726a965584a0f94895f01b0c60b3cc8b0aeef11eaa6888cf"
 }
 
 resource "docker_container" "immich_redis" {
