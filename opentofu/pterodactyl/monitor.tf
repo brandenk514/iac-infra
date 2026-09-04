@@ -59,7 +59,7 @@ resource "docker_container" "beszel_agent" {
 # Dozzle – Container Log Viewer
 # ---------------------------------------------------------------------------
 resource "docker_image" "dozzle" {
-  name = "amir20/dozzle:v10.9.0"
+  name = "amir20/dozzle:v10.9.1"
 }
 
 resource "docker_container" "dozzle" {
