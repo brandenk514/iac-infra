@@ -3,7 +3,7 @@
 # Reports to the central Beszel hub running in the main stack.
 # ---------------------------------------------------------------------------
 resource "docker_image" "beszel_agent" {
-  name = "henrygd/beszel-agent-intel:0.18.8"
+  name = "henrygd/beszel-agent-intel:0.19.0"
 }
 
 resource "docker_container" "beszel_agent" {
