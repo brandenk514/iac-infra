@@ -14,8 +14,8 @@ Each stack uses the [kreuzwerker/docker](https://registry.opentofu.org/providers
 
 Two roles applied via [`ansible/site.yml`](ansible/site.yml), each scoped to its own inventory group and tagged so it can be run independently.
 
-- `baseline` (group `homelab`) — one-shot standardization for a fresh Ubuntu host: packages (`btop`, `htop`, `vim`, `git`, `fail2ban`, `chrony`, `unattended-upgrades`, `apt-listchanges`), admin user with SSH keys + passwordless sudo, SSH hardening (drop-in at `/etc/ssh/sshd_config.d/00-hardening.conf`), timezone, Docker CE from the official repo, and Tailscale from the official repo. Patching is delegated to `unattended-upgrades` (28-day cycle, auto-reboot at 03:00 local when a kernel package is staged) — there is no separate update playbook.
-- `traefik` (group `traefik`) — renders Traefik's static (`traefik.yml`) and dynamic (`config.yml`) config files into the host container mount, ensures `acme.json` is `0600`, and restarts the Traefik container on change. The container itself is created by the `trex` OpenTofu stack; this role owns its on-disk configuration so changes can be reviewed and rolled out without re-applying Tofu.
+- `baseline` (group `homelab`) — one-shot standardization for a fresh Ubuntu host: packages (`btop`, `htop`, `vim`, `git`, `fail2ban`, `chrony`, `unattended-upgrades`, `apt-listchanges`), SSH hardening (drop-in at `/etc/ssh/sshd_config.d/00-hardening.conf`), timezone, Docker CE from the official repo, and Tailscale from the official repo. Patching is delegated to `unattended-upgrades` (28-day cycle, auto-reboot at 03:00 local when a kernel package is staged) — there is no separate update playbook.
+- `traefik` (group `traefik`) — renders Traefik's static (`traefik.yml`) and dynamic (`config.yml`) config files into the host container mount, ensures `acme.json` is `0600`, and restarts the Traefik container on change. The container itself is created by the `pterodactyl` OpenTofu stack (in `opentofu/pterodactyl/traefik.tf`); this role owns its on-disk configuration so changes can be reviewed and rolled out without re-applying Tofu.
 
 No host firewall is installed. Docker bypasses UFW by inserting its own iptables rules, so UFW gives false confidence once Docker is running. The network boundary is enforced by *bind policy*: container ports are published to `127.0.0.1:` or to the Tailscale interface (e.g. `100.x.y.z:443`). Anything that must be LAN-reachable goes through Traefik, which is the only container bound to `0.0.0.0`. SSH brute-force protection is handled by `fail2ban`.
 
@@ -71,7 +71,7 @@ cd ansible
 ansible-galaxy collection install -r requirements.yml
 ```
 
-Populate [`inventory.yml`](ansible/inventory.yml) with your hosts. The `homelab` group gets baseline; the `traefik` child group gates the `traefik` role — add a host to the child group only when you want the corresponding role applied. Set `admin_authorized_keys` in `group_vars/all.yml` (or per-host in `host_vars/<host>.yml`), and store `tailscale_authkey` in `ansible-vault` or pass it at runtime.
+Populate [`inventory.yml`](ansible/inventory.yml) with your hosts. The `homelab` group gets baseline; the `traefik` child group gates the `traefik` role — add a host to the child group only when you want the corresponding role applied. Store `tailscale_authkey` in `ansible-vault` or pass it at runtime.
 
 #### Provision a new server
 
@@ -83,7 +83,7 @@ ansible-playbook -i inventory.yml site.yml -u root -e tailscale_authkey=tskey-au
 ansible-playbook site.yml
 ```
 
-If `admin_authorized_keys` is empty, the baseline role skips admin-user creation and Docker-group membership — useful when you're managing the existing user out-of-band.
+The baseline role adds `{{ admin_user }}` to the `docker` group, so that user must already exist on the host.
 
 #### Apply one role at a time
 
@@ -102,8 +102,7 @@ Defaults live in [`ansible/group_vars/all.yml`](ansible/group_vars/all.yml) and 
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `admin_user` | `core-ci` | Admin account created by baseline |
-| `admin_authorized_keys` | `[]` | Public keys for the admin user — empty disables user creation |
+| `admin_user` | `core-ci` | User added to the `docker` group by baseline (must already exist on the host) |
 | `ssh_port` | `22` | SSH port |
 | `ssh_permit_root_login` | `"no"` | sshd hardening drop-in setting |
 | `ssh_password_authentication` | `"no"` | sshd hardening drop-in setting |

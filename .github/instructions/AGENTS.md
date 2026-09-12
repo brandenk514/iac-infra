@@ -14,22 +14,18 @@ The directory structure is maintained as follows:
 |   |__ requirements.yml
 │   └── roles/
 └── opentofu/
-    ├── nanosaurus/
-    │    ├── main.tf
-    │    ├── outputs.tf
-    │    ├── variables.tf
-    │    └── terraform.tfvars
-    |__ trex/
-    │    ├── main.tf
-    │    ├── outputs.tf
-    │    ├── variables.tf
-    │    └── terraform.tfvars
-    |__ pterodactyl/
-    │    ├── main.tf
-    │    ├── outputs.tf
-    │    ├── variables.tf
-    │    └── terraform.tfvars
-    └── modules/
+    └── pterodactyl/
+         ├── main.tf
+         ├── variables.tf
+         ├── cloudflared.tf
+         ├── traefik.tf
+         ├── tdarr.tf
+         ├── media.tf
+         ├── immich.tf
+         ├── monitor.tf
+         ├── networks.tf
+         ├── utilities.tf
+         └── tdarr-flow/
 ```
 
 ## 2. OpenTofu Coding Guidelines
