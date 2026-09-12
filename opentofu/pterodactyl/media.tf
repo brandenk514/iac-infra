@@ -410,7 +410,7 @@ resource "docker_container" "seerr" {
 # FlareSolverr – Captcha Bypass Proxy
 # ---------------------------------------------------------------------------
 resource "docker_image" "flaresolverr" {
-  name = "ghcr.io/flaresolverr/flaresolverr:v3.5.0"
+  name = "ghcr.io/flaresolverr/flaresolverr:v3.5.2"
 }
 
 resource "docker_container" "flaresolverr" {
