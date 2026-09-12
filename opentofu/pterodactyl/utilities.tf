@@ -50,7 +50,7 @@ resource "docker_container" "lubelogger" {
 # Archive Team Warrior
 # ---------------------------------------------------------------------------
 resource "docker_image" "archiveteam_warrior" {
-    name = "atdr.meo.ws/archiveteam/warrior-dockerfile:latest@sha256:cdacda79bc812672975d34867e0a3d08a7681370b3c64633d413e9e1e7a9ab78"
+    name = "atdr.meo.ws/archiveteam/warrior-dockerfile:latest@sha256:972495c60ab7f43d8abfd494ada86581398067e0cb5c66cfff1caeca01d9f6fb"
 }
 
 resource "docker_container" "archiveteam_warrior" {
