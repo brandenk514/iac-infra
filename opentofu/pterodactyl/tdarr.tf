@@ -24,22 +24,12 @@ resource "docker_container" "tdarr" {
     "serverPort=8266",
     "webUIPort=8265",
     "internalNode=true",
-    "nodeName=a310-node",
-    "LIBVA_DRIVER_NAME=iHD",
+    "nodeName=rtx5070-node",
   ]
 
-  # Intel A310 — mount the A310's render node at its native path. Remapping
-  # to renderD128 breaks libva's DRM topology lookup (vaGetDisplayDRM returns
-  # NULL). Tdarr flow plugins must point QSV/VAAPI at /dev/dri/renderD129.
-  devices {
-    host_path      = "/dev/dri/renderD129"
-    container_path = "/dev/dri/renderD129"
-  }
-
-  devices {
-    host_path      = "/dev/dri/card1"
-    container_path = "/dev/dri/card1"
-  }
+  # NVIDIA RTX 5070 — the nvidia-container-toolkit injects /dev/nvidia*,
+  # CUDA runtime libraries, and NVENC/NVDEC access via `gpus = "all"`.
+  gpus = "all"
 
   dynamic "labels" {
     for_each = {
