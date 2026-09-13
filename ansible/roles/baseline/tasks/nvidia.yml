@@ -1,0 +1,97 @@
+---
+# Installs the NVIDIA driver stack + nvidia-container-toolkit on hosts that
+# expose an NVIDIA GPU (detected via /proc/driver/nvidia/version).
+#
+# On the Framework 16 this is the RTX 5070; on the retired OptiPlex 7070
+# (A310) the GPU is Intel integrated and every task below is skipped.
+#
+# Order matters:
+#   1. nvidia driver (kernel module)
+#   2. nvidia-container-toolkit (userland, provides the `nvidia` docker runtime)
+#   3. nvidia-ctk runtime configure — rewrites /etc/docker/daemon.json
+#   4. restart docker so `docker run --gpus all` works
+
+- name: Detect NVIDIA GPU
+  ansible.builtin.stat:
+    path: /proc/driver/nvidia/version
+  register: nvidia_proc
+  failed_when: false
+
+- name: "Note: no NVIDIA GPU detected, skipping"
+  ansible.builtin.debug:
+    msg: "No NVIDIA GPU detected on {{ inventory_hostname }}; skipping nvidia-container-toolkit setup."
+  when: not (nvidia_proc.stat.exists | default(false))
+
+- name: Ensure apt keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: nvidia_proc.stat.exists | default(false)
+
+- name: Download NVIDIA container toolkit GPG key
+  ansible.builtin.get_url:
+    url: https://nvidia.github.io/libnvidia-container/gpgkey
+    dest: /etc/apt/keyrings/nvidia-container-toolkit.asc
+    owner: root
+    group: root
+    mode: "0644"
+    force: false
+  when: nvidia_proc.stat.exists | default(false)
+
+- name: Download NVIDIA container toolkit apt list
+  ansible.builtin.get_url:
+    url: https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list
+    dest: /etc/apt/sources.list.d/nvidia-container-toolkit.list
+    owner: root
+    group: root
+    mode: "0644"
+    force: false
+  when: nvidia_proc.stat.exists | default(false)
+
+- name: Add signed-by attribute to NVIDIA container toolkit apt list
+  ansible.builtin.command: >-
+    sed -i 's#^deb https://#deb [signed-by=/etc/apt/keyrings/nvidia-container-toolkit.asc] https://#g'
+    /etc/apt/sources.list.d/nvidia-container-toolkit.list
+  when: nvidia_proc.stat.exists | default(false)
+
+- name: Install NVIDIA driver + container toolkit
+  ansible.builtin.apt:
+    name:
+      - nvidia-driver-580
+      - nvidia-container-toolkit
+      - nvidia-container-toolkit-base
+      - libnvidia-container-tools
+      - libnvidia-container1
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: nvidia_proc.stat.exists | default(false)
+
+- name: Configure Docker to use the nvidia runtime
+  ansible.builtin.command: nvidia-ctk runtime configure --runtime=docker
+  changed_when: true
+  when: nvidia_proc.stat.exists | default(false)
+
+- name: Restart Docker to pick up nvidia runtime
+  ansible.builtin.service:
+    name: docker
+    state: restarted
+  when: nvidia_proc.stat.exists | default(false)
+
+- name: Sanity-check the nvidia docker runtime
+  ansible.builtin.command: docker info --format '{{json .Runtimes}}'
+  register: docker_runtimes
+  changed_when: false
+  failed_when: false
+  when: nvidia_proc.stat.exists | default(false)
+
+- name: Verify nvidia runtime is registered
+  ansible.builtin.assert:
+    that: docker_runtimes.stdout | default('') is search('nvidia')
+    fail_msg: >-
+      nvidia runtime not visible in `docker info` after restart:
+      {{ docker_runtimes.stdout | default('<no output>') }}
+  when: nvidia_proc.stat.exists | default(false)

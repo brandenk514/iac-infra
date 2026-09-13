@@ -13,5 +13,8 @@
 - name: Include Docker tasks
   ansible.builtin.import_tasks: docker.yml
 
+- name: Include NVIDIA tasks
+  ansible.builtin.import_tasks: nvidia.yml
+
 - name: Include Tailscale tasks
   ansible.builtin.import_tasks: tailscale.yml
