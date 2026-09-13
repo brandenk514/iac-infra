@@ -283,15 +283,8 @@ resource "docker_container" "jellyfin" {
   image   = docker_image.jellyfin.image_id
   restart = "unless-stopped"
 
-  devices {
-    host_path      = "/dev/dri/renderD129"
-    container_path = "/dev/dri/renderD129"
-  }
-
-  devices {
-    host_path      = "/dev/dri/card1"
-    container_path = "/dev/dri/card1"
-  }
+  # NVIDIA GPU access for hardware transcoding (NVDEC decode, NVENC encode).
+  gpus = "all"
 
   networks_advanced {
     name    = docker_network.proxy.id
@@ -303,7 +296,6 @@ resource "docker_container" "jellyfin" {
     "PGID=${var.pgid}",
     "TZ=${var.timezone}",
     "JELLYFIN_PublishedServerUrl=https://watch.uaccloud.com",
-    "LIBVA_DRIVER_NAME=iHD",
     "DOCKER_MODS=linuxserver/mods:jellyfin-opencl",
   ]
 
