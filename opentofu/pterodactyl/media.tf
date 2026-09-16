@@ -46,7 +46,7 @@ resource "docker_container" "prowlarr" {
 # Sonarr – TV Series
 # ---------------------------------------------------------------------------
 resource "docker_image" "sonarr" {
-  name = "linuxserver/sonarr:4.0.19"
+  name = "linuxserver/sonarr:4.0.20.3014-ls325"
 }
 
 resource "docker_container" "sonarr" {
