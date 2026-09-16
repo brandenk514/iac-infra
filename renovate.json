@@ -11,5 +11,15 @@
       ],
       "datasourceTemplate": "docker"
     }
+  ],
+  "packageRules": [
+    {
+      "description": "linuxserver.io images (linuxserver/* and lscr.io/linuxserver/*) use non-semver tags — older `X.Y.Z` (e.g. 10.11.11) and newer `X.Y[.Z]ubuNNNN[-lsN]` (e.g. 12.1ubu2604-ls50). The default `docker` versioning can't detect new releases across these formats, so use an explicit regex versioning that accepts both.",
+      "matchDepPatterns": [
+        "^linuxserver/",
+        "^lscr\\.io/linuxserver/"
+      ],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)(?:\\.(?<patch>\\d+))?(?:ubu\\d{4})?(?:-[a-z]+)?(?:-ls\\d+)?$"
+    }
   ]
 }

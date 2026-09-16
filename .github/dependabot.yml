@@ -11,14 +11,9 @@ multi-ecosystem-groups:
       interval: "weekly"
 
 updates:
-  - package-ecosystem: "docker"
-    directory: "/"
-    multi-ecosystem-group: "infrastructure"
-
-  - package-ecosystem: "docker-compose"
-    directory: "/"
-    multi-ecosystem-group: "infrastructure"
-
+  # Docker images are declared in OpenTofu `docker_image` resources, not in
+  # Dockerfiles/docker-compose, so the docker/docker-compose ecosystems don't
+  # apply here. Container image versioning is handled by Renovate (renovate.json).
   - package-ecosystem: "opentofu"
     directory: "/opentofu"
     patterns: ["docker"]
