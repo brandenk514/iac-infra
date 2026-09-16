@@ -106,7 +106,7 @@ resource "docker_container" "sonarr" {
 # Radarr – Movies
 # ---------------------------------------------------------------------------
 resource "docker_image" "radarr" {
-  name = "linuxserver/radarr:6.3.0"
+  name = "linuxserver/radarr:6.4.4.10685-ls317"
 }
 
 resource "docker_container" "radarr" {
