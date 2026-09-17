@@ -2,7 +2,7 @@
 # Prowlarr – Indexer Manager
 # ---------------------------------------------------------------------------
 resource "docker_image" "prowlarr" {
-  name = "linuxserver/prowlarr:2.5.2"
+  name = "linuxserver/prowlarr:2.6.5.5623-ls161"
 }
 
 resource "docker_container" "prowlarr" {
@@ -46,7 +46,7 @@ resource "docker_container" "prowlarr" {
 # Sonarr – TV Series
 # ---------------------------------------------------------------------------
 resource "docker_image" "sonarr" {
-  name = "linuxserver/sonarr:4.0.19"
+  name = "linuxserver/sonarr:4.0.20.3014-ls325"
 }
 
 resource "docker_container" "sonarr" {
@@ -106,7 +106,7 @@ resource "docker_container" "sonarr" {
 # Radarr – Movies
 # ---------------------------------------------------------------------------
 resource "docker_image" "radarr" {
-  name = "linuxserver/radarr:6.3.0"
+  name = "linuxserver/radarr:6.4.4.10685-ls317"
 }
 
 resource "docker_container" "radarr" {
@@ -158,7 +158,7 @@ resource "docker_container" "radarr" {
 # Lidarr – Music
 # ---------------------------------------------------------------------------
 resource "docker_image" "lidarr" {
-  name = "linuxserver/lidarr:3.1.0"
+  name = "linuxserver/lidarr:3.1.0.4875-ls41"
 }
 
 resource "docker_container" "lidarr" {
