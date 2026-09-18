@@ -246,9 +246,8 @@ resource "docker_container" "tovpn" {
     "OPENVPN_CONFIG=",
     "OPENVPN_USERNAME=${var.openvpn_username}",
     "OPENVPN_PASSWORD=${var.openvpn_password}",
-    "LOCAL_NETWORK=192.168.100.0/24, 192.168.105.0/24",
+    "LOCAL_NETWORK=192.168.100.0/24, 192.168.105.0/24, ${docker_network.proxy.subnet}",
     "TRANSMISSION_WEB_HOME=/opt/transmission-ui/flood-for-transmission",
-    "TRANSMISSION_WHITELIST_ENABLED=false",
   ]
 
   log_driver = "json-file"
