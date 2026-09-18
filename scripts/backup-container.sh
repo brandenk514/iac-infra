@@ -1,7 +1,8 @@
 #!/bin/sh
 # ==============================================================================
-# backup-containers.sh — Stop running containers, rsync /mnt/r5-dstor/ to an
-#                        NFS share, restart the containers, and send a Discord
+# backup-containers.sh — Stop running containers, rsync /mnt/r5-dstor/ to one
+#                        or more backup destinations (local mounts / NFS),
+#                        restart the containers, and send a Discord
 #                        notification when complete.
 #
 # Intended use: scheduled (cron / task scheduler) backup of bind-mounted
@@ -28,14 +29,23 @@ set -euo pipefail
 STATE_FILE="/var/run/docker-backup-running-containers"
 LOG_FILE="${LOG_DIR}/backup-$(date +%Y-%m-%dT%H-%M-%S).log"
 
-SOURCE_DIR="/mnt/r5-dstor/"
-# NFS destination — either an already-mounted path (recommended) or an
+SOURCE_DIR="/mnt/r5-dstor/containers"
+# Backup destinations — either an already-mounted path (recommended) or an
 # nfs:// URI, e.g. "nfs://nas.local/volumes1/backup".
-DEST_DIR="nfs://nas.local/volumes1/backup/r5-dstor/"
+DEST_DIRS=(
+    "/mnt/container-backups"
+    "/mnt/secondary-backup"
+)
 
 # Paths under the source that should NOT be backed up here (handled elsewhere).
 RSYNC_EXCLUDES=(
-    "--exclude=containers"
+    "--exclude=lost+found"
+    "--exclude=.cache"
+    "--exclude=.tmp"
+    "--exclude=.temp"
+    "--exclude=.Trash"
+    "--exclude=.Trash-1000"
+    "--exclude=.Trash-0"
 )
 
 # Discord webhook (set here or export DISCORD_WEBHOOK_URL before running)
@@ -43,7 +53,18 @@ DISCORD_WEBHOOK_URL=""
 # ─────────────────────────────────────────────────────────────────────────────
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "${LOG_FILE}"; }
-die() { log "ERROR: $*"; exit 1; }
+
+# Explicit fatal error. Unlike the ERR trap, `exit` does not fire it, so
+# handle container restore + Discord notification here directly.
+die() {
+    log "ERROR: $*"
+    if [[ -f "${STATE_FILE}" ]]; then
+        restore_containers
+        local reason="${*}"
+        notify_discord "failure" "The backup failed: ${reason}. Containers were restored. Check the log for details."
+    fi
+    exit 1
+}
 
 # Send a Discord embed notification
 #   $1 = "success" | "failure"
@@ -136,25 +157,34 @@ else
     log "No running containers to stop."
 fi
 
-# ── 2. Rsync the volumes to the NFS share ────────────────────────────────────
+# ── 2. Rsync the volumes to each backup destination ─────────────────────────
 [[ -d "${SOURCE_DIR%/}" ]] || die "Source directory not found: ${SOURCE_DIR}"
+[[ "${#DEST_DIRS[@]}" -gt 0 ]] || die "No backup destinations configured (DEST_DIRS is empty)"
 
-# If the destination is a mount path, make sure it's actually reachable.
-if [[ "${DEST_DIR}" != nfs://* ]]; then
-    dest_path="${DEST_DIR%/}/.backup-probe"
-    touch "${dest_path}" 2>/dev/null || die "Destination not writable (NFS mounted?): ${DEST_DIR}"
-    rm -f "${dest_path}"
-fi
+# Comma-space join that works on bash < 5.1 (IFS multi-char join is 5.1+)
+DEST_SUMMARY=""
+for _d in "${DEST_DIRS[@]}"; do
+    DEST_SUMMARY+="${DEST_SUMMARY:+, }${_d}"
+done
 
-log "Rsyncing ${SOURCE_DIR} -> ${DEST_DIR}"
-# shellcheck disable=SC2086
-rsync -aHAX --delete \
-    "${RSYNC_EXCLUDES[@]}" \
-    --stats \
-    "${SOURCE_DIR}" \
-    "${DEST_DIR}" \
-    2>&1 | tee -a "${LOG_FILE}"
-log "Rsync complete."
+for dest in "${DEST_DIRS[@]}"; do
+    # If the destination is a mount path, make sure it's actually reachable.
+    if [[ "${dest}" != nfs://* ]]; then
+        dest_path="${dest%/}/.backup-probe"
+        touch "${dest_path}" 2>/dev/null || die "Destination not writable (NFS mounted?): ${dest}"
+        rm -f "${dest_path}"
+    fi
+
+    log "Rsyncing ${SOURCE_DIR} -> ${dest}"
+    # shellcheck disable=SC2086
+    rsync -aHAX --delete \
+        "${RSYNC_EXCLUDES[@]}" \
+        --stats \
+        "${SOURCE_DIR}" \
+        "${dest}" \
+        2>&1 | tee -a "${LOG_FILE}"
+    log "Rsync to ${dest} complete."
+done
 
 # ── 3. Restart the containers ────────────────────────────────────────────────
 if [[ "${RUNNING_COUNT}" -gt 0 ]]; then
@@ -165,7 +195,7 @@ fi
 rm -f "${STATE_FILE}"
 
 # ── 4. Notify ────────────────────────────────────────────────────────────────
-notify_discord "success" "Backed up **${SOURCE_DIR}** to **${DEST_DIR}**. **${RUNNING_COUNT}** containers were stopped and restarted."
+notify_discord "success" "Backed up **${SOURCE_DIR}** to **${DEST_SUMMARY}**. **${RUNNING_COUNT}** containers were stopped and restarted."
 
 # Clean path — don't let the ERR trap fire on exit
 trap - ERR
