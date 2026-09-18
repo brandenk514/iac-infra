@@ -15,6 +15,11 @@ resource "docker_container" "traefik" {
     aliases = ["traefik"]
   }
 
+  networks_advanced {
+    name    = docker_network.immich.id
+    aliases = ["traefik"]
+  }
+
   ports {
     internal = 80
     external = 80
