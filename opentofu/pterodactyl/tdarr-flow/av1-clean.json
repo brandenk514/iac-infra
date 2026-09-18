@@ -173,7 +173,7 @@
       }
     },
     {
-      "name": "Is Intel QSV Worker?",
+      "name": "Is QSV Worker? (unused on NVIDIA host)",
       "sourceRepo": "Community",
       "pluginName": "checkFlowVariable",
       "version": "1.0.0",
@@ -256,13 +256,13 @@
       }
     },
     {
-      "name": "Custom Arguments",
+      "name": "NVENC Custom Arguments",
       "sourceRepo": "Community",
       "pluginName": "ffmpegCommandCustomArguments",
       "version": "1.0.0",
       "inputsDB": {
-        "outputArguments": "-multipass 2 -cq {{{args.variables.user.qual}}} -rc-lookahead 32 -b_adapt true -a53cc 0 -preset 18",
-        "inputArguments": "-hwaccel cuda"
+        "outputArguments": "-multipass 2 -cq {{{args.variables.user.qual}}} -rc-lookahead 32 -b_adapt 2 -spatial_aq 1",
+        "inputArguments": "-hwaccel cuda -hwaccel_output_format cuda"
       },
       "fpEnabled": true,
       "id": "t8fL-qwY0",
@@ -272,13 +272,13 @@
       }
     },
     {
-      "name": "Set Video Encoder",
+      "name": "Set NVENC AV1 Encoder",
       "sourceRepo": "Community",
       "pluginName": "ffmpegCommandSetVideoEncoder",
       "version": "1.0.0",
       "inputsDB": {
         "outputCodec": "av1",
-        "ffmpegPreset": "veryslow",
+        "ffmpegPreset": "p7",
         "hardwareType": "nvenc",
         "ffmpegQuality": "{{{args.variables.user.crf}}}",
         "hardwareEncoding": "true",
@@ -295,7 +295,7 @@
       }
     },
     {
-      "name": "NVENC Pipeline",
+      "name": "NVENC Pipeline (RTX 5070 / Blackwell)",
       "sourceRepo": "Community",
       "pluginName": "comment",
       "version": "1.0.0",
@@ -307,7 +307,7 @@
       }
     },
     {
-      "name": "Check Intel (QSV)",
+      "name": "Check QSV (hevc_qsv) — fails on NVIDIA host",
       "sourceRepo": "Community",
       "pluginName": "checkNodeHardwareEncoder",
       "version": "1.0.0",
@@ -652,12 +652,12 @@
       }
     },
     {
-      "name": "Check Intel (QSV)",
+      "name": "Check NVENC (hevc_nvenc)",
       "sourceRepo": "Community",
       "pluginName": "checkNodeHardwareEncoder",
       "version": "1.0.0",
       "inputsDB": {
-        "hardwareEncoder": "hevc_qsv"
+        "hardwareEncoder": "hevc_nvenc"
       },
       "fpEnabled": true,
       "id": "Np8IKYx6p",
@@ -667,7 +667,7 @@
       }
     },
     {
-      "name": "Intel QSV Pipeline",
+      "name": "NVENC Pipeline (RTX 5070 / Blackwell)",
       "sourceRepo": "Community",
       "pluginName": "comment",
       "version": "1.0.0",
