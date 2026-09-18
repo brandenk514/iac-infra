@@ -35,14 +35,11 @@ resource "docker_container" "beszel_agent" {
     "KEY=${var.beszel_agent_key}",
   ]
 
-  # PERFMON: NVIDIA GPU stats via nvidia-smi
   # SYS_RAWIO / SYS_ADMIN: SMART data via smartctl
+  # (No GPU on this host — the NVIDIA/RTX 5070 stack lives on trex.)
   capabilities {
-    add = ["PERFMON", "SYS_RAWIO", "SYS_ADMIN"]
+    add = ["SYS_RAWIO", "SYS_ADMIN"]
   }
-
-  # NVIDIA GPU (RTX 5070) via nvidia-container-toolkit
-  gpus = "all"
 
   devices {
     host_path      = "/dev/nvme0"
