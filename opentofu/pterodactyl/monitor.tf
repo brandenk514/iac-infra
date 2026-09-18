@@ -66,9 +66,12 @@ resource "docker_container" "dozzle" {
   image   = docker_image.dozzle.image_id
   restart = "unless-stopped"
 
-  networks_advanced {
-    name    = docker_network.proxy.id
-    aliases = ["dozzle"]
+  # No local traefik on this host — publish on loopback so the cloudflared
+  # tunnel (same host) can serve it, and nothing binds to 0.0.0.0.
+  ports {
+    internal = 8080
+    external = 8080
+    ip       = "127.0.0.1"
   }
 
   volumes {
@@ -81,19 +84,4 @@ resource "docker_container" "dozzle" {
     "DOZZLE_ENABLE_ACTIONS=true",
     "DOZZLE_ENABLE_SHELL=true",
   ]
-
-  dynamic "labels" {
-    for_each = {
-      "traefik.enable"                                     = "true"
-      "traefik.http.routers.dozzle.rule"                   = "Host(`dozzle.local.uaccloud.com`)"
-      "traefik.http.services.dozzle.loadbalancer.server.port" = "8080"
-      "traefik.http.routers.dozzle.tls"                    = "true"
-      "traefik.http.routers.dozzle.tls.certresolver"       = "cloudflare"
-      "traefik.http.routers.dozzle.entrypoints"            = "websecure"
-    }
-    content {
-      label = labels.key
-      value = labels.value
-    }
-  }
 }

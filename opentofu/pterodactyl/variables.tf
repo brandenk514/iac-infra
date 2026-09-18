@@ -76,18 +76,3 @@ variable "beszel_agent_token" {
   type        = string
   sensitive   = true
 }
-
-# ---------------------------------------------------------------------------
-# Traefik
-# ---------------------------------------------------------------------------
-variable "traefik_dashboard_credentials" {
-  description = "Htpasswd credentials for the Traefik dashboard"
-  type        = string
-  sensitive   = true
-}
-
-variable "cf_dns_api_token" {
-  description = "Cloudflare DNS API token for ACME certificate resolution"
-  type        = string
-  sensitive   = true
-}

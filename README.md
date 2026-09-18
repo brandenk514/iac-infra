@@ -10,7 +10,7 @@ Each stack uses the [kreuzwerker/docker](https://registry.opentofu.org/providers
 
 **[`opentofu/trex/`](opentofu/trex/)** — the main container stack on the `trex` host: reverse proxy (`traefik`), Cloudflare Tunnel (`cloudflared`), media pipeline (Sonarr/Radarr/Lidarr/Prowlarr/Jellyfin/Seerr/Tdarr/…), Immich photo stack, utilities, and a Beszel agent reporting to the central hub.
 
-**[`opentofu/pterodactyl/`](opentofu/pterodactyl/)** — the retained monitor stack on the Pterodactyl host: `traefik` (reverse proxy for its own `*.local.uaccloud.com` routes), `cloudflared` (tunnel), `beszel-agent`, and `dozzle` (log viewer for this host).
+**[`opentofu/pterodactyl/`](opentofu/pterodactyl/)** — the retained monitor stack on the Pterodactyl host: `cloudflared` (tunnel), `beszel-agent`, and `dozzle` (log viewer, published on `127.0.0.1` for the tunnel). No local Traefik — all reverse-proxying lives on `trex`.
 
 ### Ansible
 
@@ -26,7 +26,7 @@ No host firewall is installed. Docker bypasses UFW by inserting its own iptables
 ```
 opentofu/
 ├── trex/         # main container stack (media, immich, utilities, proxy, tunnel)
-└── pterodactyl/  # monitor stack: traefik, cloudflared, beszel-agent, dozzle
+└── pterodactyl/  # monitor stack: cloudflared, beszel-agent, dozzle
 ansible/
 ├── roles/baseline/   # OS, SSH, Docker, Tailscale, unattended-upgrades
 ├── roles/traefik/    # Traefik static/dynamic config + acme.json

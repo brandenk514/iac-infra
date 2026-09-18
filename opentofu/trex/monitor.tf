@@ -17,6 +17,12 @@ resource "docker_container" "beszel_agent" {
     host_path      = "${var.docker_mnt}/beszel_agent_data"
     container_path = "/var/lib/beszel-agent"
   }
+  ports {
+    internal = 8080
+    external = 8080
+    ip       = "127.0.0.1"
+  }
+
   volumes {
     host_path      = "/var/run/docker.sock"
     container_path = "/var/run/docker.sock"
