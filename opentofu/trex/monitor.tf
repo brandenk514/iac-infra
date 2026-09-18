@@ -20,7 +20,6 @@ resource "docker_container" "beszel_agent" {
   ports {
     internal = 8080
     external = 8080
-    ip       = "127.0.0.1"
   }
 
   volumes {
