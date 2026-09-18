@@ -8,7 +8,9 @@ Homelab infrastructure as code. OpenTofu manages containerized stacks over SSH; 
 
 Each stack uses the [kreuzwerker/docker](https://registry.opentofu.org/providers/kreuzwerker/docker/latest) provider and connects to its target host with `ssh://`. Backend keys are isolated per stack so blast radius is one host at a time.
 
-**[`opentofu/pterodactyl/`](opentofu/pterodactyl/)** — Cloudflare Tunnel (`cloudflared`) container fronting the Pterodactyl game-server panel; ships a Beszel agent.
+**[`opentofu/trex/`](opentofu/trex/)** — the main container stack on the `trex` host: reverse proxy (`traefik`), Cloudflare Tunnel (`cloudflared`), media pipeline (Sonarr/Radarr/Lidarr/Prowlarr/Jellyfin/Seerr/Tdarr/…), Immich photo stack, utilities, and a Beszel agent reporting to the central hub.
+
+**[`opentofu/pterodactyl/`](opentofu/pterodactyl/)** — the retained monitor stack on the Pterodactyl host: `cloudflared` (tunnel), `beszel-agent`, and `dozzle` (log viewer, published on `127.0.0.1` for the tunnel). No local Traefik — all reverse-proxying lives on `trex`.
 
 ### Ansible
 
@@ -23,7 +25,8 @@ No host firewall is installed. Docker bypasses UFW by inserting its own iptables
 
 ```
 opentofu/
-└── pterodactyl/  # cloudflared tunnel
+├── trex/         # main container stack (media, immich, utilities, proxy, tunnel)
+└── pterodactyl/  # monitor stack: cloudflared, beszel-agent, dozzle
 ansible/
 ├── roles/baseline/   # OS, SSH, Docker, Tailscale, unattended-upgrades
 ├── roles/traefik/    # Traefik static/dynamic config + acme.json
@@ -48,7 +51,7 @@ tofu plan
 tofu apply
 ```
 
-CI runs on push to `main` when files under `opentofu/**` change — see [.github/workflows/tofu-deploy.yml](.github/workflows/tofu-deploy.yml). The `pterodactyl` stack has its own `*-plan` and `*-apply` jobs with its own B2 state key (`pterodactyl/terraform.tfstate`). Plan runs unconditionally and posts the diff to the job summary; apply is gated on the GitHub `production` environment, so an approver must release each stack. The runner joins the Tailnet via the Tailscale GitHub Action, writes the SSH key and per-stack `terraform.tfvars` from secrets, then runs `tofu init` + `tofu apply -auto-approve`.
+CI runs on push to `main` when files under `opentofu/**` change — see [.github/workflows/tofu-deploy.yml](.github/workflows/tofu-deploy.yml). Each stack has its own `*-plan` and `*-apply` jobs with its own B2 state key (`trex/terraform.tfstate`, `pterodactyl/terraform.tfstate`). Plan runs unconditionally and posts the diff to the job summary; apply is gated on the GitHub `production` environment, so an approver must release each stack. The runner joins the Tailnet via the Tailscale GitHub Action, writes the SSH key and per-stack `terraform.tfvars` from secrets, then runs `tofu init` + `tofu apply -auto-approve`.
 
 > The `production` environment must be configured in repo Settings → Environments with **Required reviewers** enabled, otherwise the approval gate is a no-op.
 
@@ -60,6 +63,7 @@ Required secrets:
 | `B2_BUCKET`, `B2_REGION` | State bucket + region |
 | `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` | Tailscale OAuth for the CI runner |
 | `TF_SSH_KEY` | Private key for the Docker-host SSH user |
+| `TF_TFVARS_TREX` | tfvars content for `trex` |
 | `TF_TFVARS_PTERODACTYL` | tfvars content for `pterodactyl` |
 
 ### Ansible

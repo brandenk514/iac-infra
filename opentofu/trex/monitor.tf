@@ -17,6 +17,12 @@ resource "docker_container" "beszel_agent" {
     host_path      = "${var.docker_mnt}/beszel_agent_data"
     container_path = "/var/lib/beszel-agent"
   }
+  ports {
+    internal = 8080
+    external = 8080
+    ip       = "127.0.0.1"
+  }
+
   volumes {
     host_path      = "/var/run/docker.sock"
     container_path = "/var/run/docker.sock"
@@ -41,9 +47,10 @@ resource "docker_container" "beszel_agent" {
     add = ["PERFMON", "SYS_RAWIO", "SYS_ADMIN"]
   }
 
-  # NVIDIA GPU (RTX 5070) via nvidia-container-toolkit
+  # NVIDIA GPU via nvidia-container-toolkit
   gpus = "all"
 
+  # Block devices for SMART data — adjust to the local disks on this host.
   devices {
     host_path      = "/dev/nvme0"
     container_path = "/dev/nvme0"
@@ -52,36 +59,4 @@ resource "docker_container" "beszel_agent" {
     host_path      = "/dev/sda"
     container_path = "/dev/sda"
   }
-}
-
-# ---------------------------------------------------------------------------
-# Dozzle – Container Log Viewer
-# ---------------------------------------------------------------------------
-resource "docker_image" "dozzle" {
-  name = "amir20/dozzle:v11.1.0"
-}
-
-resource "docker_container" "dozzle" {
-  name    = "dozzle"
-  image   = docker_image.dozzle.image_id
-  restart = "unless-stopped"
-
-  # No local traefik on this host — publish on loopback so the cloudflared
-  # tunnel (same host) can serve it, and nothing binds to 0.0.0.0.
-  ports {
-    internal = 8080
-    external = 8080
-    ip       = "127.0.0.1"
-  }
-
-  volumes {
-    host_path      = "/var/run/docker.sock"
-    container_path = "/var/run/docker.sock"
-    read_only      = true
-  }
-
-  env = [
-    "DOZZLE_ENABLE_ACTIONS=true",
-    "DOZZLE_ENABLE_SHELL=true",
-  ]
 }

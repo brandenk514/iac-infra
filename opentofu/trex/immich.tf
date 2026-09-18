@@ -10,10 +10,8 @@ resource "docker_container" "immich_server" {
   image   = docker_image.immich_server.image_id
   restart = "unless-stopped"
 
-  devices {
-    host_path      = "/dev/dri/renderD129"
-    container_path = "/dev/dri/renderD129"
-  }
+  # NVIDIA GPU (RTX 5070) via nvidia-container-toolkit
+  gpus = "all"
 
   networks_advanced {
     name = docker_network.proxy.id
@@ -42,7 +40,6 @@ resource "docker_container" "immich_server" {
     "DB_HOSTNAME=immich_postgres",
     "REDIS_HOSTNAME=immich_redis",
     "TZ=${var.timezone}",
-    "LIBVA_DRIVER_NAME=iHD",
   ]
 
   depends_on = [
@@ -79,10 +76,8 @@ resource "docker_container" "immich_ml" {
   image   = docker_image.immich_ml.image_id
   restart = "unless-stopped"
 
-  devices {
-    host_path      = "/dev/dri/renderD129"
-    container_path = "/dev/dri/renderD129"
-  }
+  # NVIDIA GPU (RTX 5070) via nvidia-container-toolkit — CUDA for ML inference
+  gpus = "all"
 
   networks_advanced {
     name = docker_network.immich.id
@@ -101,7 +96,6 @@ resource "docker_container" "immich_ml" {
     "DB_HOSTNAME=immich_postgres",
     "REDIS_HOSTNAME=immich_redis",
     "TZ=${var.timezone}",
-    "LIBVA_DRIVER_NAME=iHD",
   ]
 }
 
