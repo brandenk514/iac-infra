@@ -3,3 +3,8 @@
   ansible.builtin.service:
     name: ssh
     state: restarted
+
+- name: Restart Docker
+  ansible.builtin.service:
+    name: docker
+    state: restarted

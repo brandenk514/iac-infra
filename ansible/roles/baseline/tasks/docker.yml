@@ -47,3 +47,36 @@
     name: "{{ admin_user }}"
     groups: docker
     append: true
+
+# ---------------------------------------------------------------------------
+# NVIDIA Container Toolkit — enables `docker run --gpus all` for the RTX 5070
+# ---------------------------------------------------------------------------
+- name: Add NVIDIA GPG key
+  ansible.builtin.get_url:
+    url: https://nvidia.github.io/libnvidia-container/gpgkey
+    dest: /etc/apt/keyrings/nvidia.asc
+    owner: root
+    group: root
+    mode: "0644"
+    force: false
+
+- name: Add NVIDIA Container Toolkit apt repository
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [signed-by=/etc/apt/keyrings/nvidia.asc]
+      https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-runtime {{ ansible_facts['distribution_release'] }} main
+    filename: nvidia-container-toolkit
+    state: present
+    update_cache: true
+
+- name: Install nvidia-container-toolkit
+  ansible.builtin.apt:
+    name: nvidia-container-toolkit
+    state: present
+
+- name: Configure Docker runtime with NVIDIA toolkit
+  ansible.builtin.command:
+    cmd: nvidia-ctk runtime configure --runtime=docker
+  register: nvidia_ctk_result
+  changed_when: nvidia_ctk_result is changed
+  notify: Restart Docker

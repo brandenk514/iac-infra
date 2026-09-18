@@ -1,9 +1,9 @@
 # ---------------------------------------------------------------------------
-# Beszel Agent – Monitoring Agent (Intel GPU)
+# Beszel Agent – Monitoring Agent (NVIDIA GPU)
 # Reports to the central Beszel hub running in the main stack.
 # ---------------------------------------------------------------------------
 resource "docker_image" "beszel_agent" {
-  name = "henrygd/beszel-agent-intel:0.19.0"
+  name = "henrygd/beszel-agent:0.19.0"
 }
 
 resource "docker_container" "beszel_agent" {
@@ -35,16 +35,15 @@ resource "docker_container" "beszel_agent" {
     "KEY=${var.beszel_agent_key}",
   ]
 
-  # PERFMON: Intel GPU stats via intel_gpu_top
+  # PERFMON: NVIDIA GPU stats via nvidia-smi
   # SYS_RAWIO / SYS_ADMIN: SMART data via smartctl
   capabilities {
     add = ["PERFMON", "SYS_RAWIO", "SYS_ADMIN"]
   }
 
-  devices {
-    host_path      = "/dev/dri/card1"
-    container_path = "/dev/dri/card1"
-  }
+  # NVIDIA GPU (RTX 5070) via nvidia-container-toolkit
+  gpus = "all"
+
   devices {
     host_path      = "/dev/nvme0"
     container_path = "/dev/nvme0"
