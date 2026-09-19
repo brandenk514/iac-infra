@@ -580,7 +580,7 @@ resource "docker_container" "transmission" {
   dynamic "labels" {
     for_each = {
       "traefik.enable"                                              = "true"
-      "traefik.http.routers.transmission.rule"                      = "Host(`transmission.local.uaccloud.com`)"
+      "traefik.http.routers.transmission.rule"                      = "Host(`tovpn.local.uaccloud.com`)"
       "traefik.http.routers.transmission.entrypoints"               = "websecure"
       "traefik.http.services.transmission.loadbalancer.server.port" = "9091"
       "traefik.http.routers.transmission.tls"                       = "true"
