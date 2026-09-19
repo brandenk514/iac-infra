@@ -41,6 +41,12 @@ variable "media_server" {
   default     = "192.168.105.4"
 }
 
+variable "local_network" {
+  description = "LAN CIDR that should bypass the VPN (transmission LOCAL_NETWORK)"
+  type        = string
+  default     = "192.168.105.0/24"
+}
+
 variable "media_library_mnt" {
   description = "NFS export path for the media library"
   type        = string

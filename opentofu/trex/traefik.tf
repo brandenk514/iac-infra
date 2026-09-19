@@ -74,16 +74,16 @@ resource "docker_container" "traefik" {
 
   dynamic "labels" {
     for_each = {
-      "traefik.enable"                                    = "true"
-      "traefik.http.routers.traefik.rule"                 = "Host(`traefik.local.uaccloud.com`)"
-      "traefik.http.routers.traefik.tls"                  = "true"
-      "traefik.http.routers.traefik.tls.certresolver"     = "cloudflare"
-      "traefik.http.routers.traefik.entrypoints"          = "websecure"
-      "traefik.http.middlewares.traefik.basicauth.users"  = var.traefik_dashboard_credentials
-      "traefik.http.routers.traefik.middlewares"           = "traefik"
+      "traefik.enable"                                   = "true"
+      "traefik.http.routers.traefik.rule"                = "Host(`traefik.local.uaccloud.com`)"
+      "traefik.http.routers.traefik.tls"                 = "true"
+      "traefik.http.routers.traefik.tls.certresolver"    = "cloudflare"
+      "traefik.http.routers.traefik.entrypoints"         = "websecure"
+      "traefik.http.middlewares.traefik.basicauth.users" = var.traefik_dashboard_credentials
+      "traefik.http.routers.traefik.middlewares"         = "traefik"
       "traefik.http.routers.traefik.tls.domains[0].main" = "uaccloud.com"
       "traefik.http.routers.traefik.tls.domains[0].sans" = "*.uaccloud.com"
-      "traefik.http.routers.traefik.service"              = "api@internal"
+      "traefik.http.routers.traefik.service"             = "api@internal"
     }
     content {
       label = labels.key

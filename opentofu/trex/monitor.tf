@@ -7,10 +7,10 @@ resource "docker_image" "beszel_agent" {
 }
 
 resource "docker_container" "beszel_agent" {
-  name         = "beszel-agent"
-  image        = docker_image.beszel_agent.image_id
-  restart      = "unless-stopped"
-  network_mode = "host"
+  name          = "beszel-agent"
+  image         = docker_image.beszel_agent.image_id
+  restart       = "unless-stopped"
+  network_mode  = "host"
   security_opts = ["apparmor:unconfined"]
 
   volumes {
@@ -90,13 +90,13 @@ resource "docker_container" "dozzle" {
 
   dynamic "labels" {
     for_each = {
-      "traefik.enable"                                       = "true"
-      "traefik.docker.network"                               = "proxy"
-      "traefik.http.routers.dozzle.rule"                     = "Host(`dozzle.local.uaccloud.com`)"
-      "traefik.http.routers.dozzle.entrypoints"              = "websecure"
+      "traefik.enable"                                        = "true"
+      "traefik.docker.network"                                = "proxy"
+      "traefik.http.routers.dozzle.rule"                      = "Host(`dozzle.local.uaccloud.com`)"
+      "traefik.http.routers.dozzle.entrypoints"               = "websecure"
       "traefik.http.services.dozzle.loadbalancer.server.port" = "8080"
-      "traefik.http.routers.dozzle.tls"                      = "true"
-      "traefik.http.routers.dozzle.tls.certresolver"         = "cloudflare"
+      "traefik.http.routers.dozzle.tls"                       = "true"
+      "traefik.http.routers.dozzle.tls.certresolver"          = "cloudflare"
     }
     content {
       label = labels.key

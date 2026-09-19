@@ -207,71 +207,6 @@ resource "docker_container" "lidarr" {
 }
 
 # ---------------------------------------------------------------------------
-# Transmission over VPN (tovpn)
-# ---------------------------------------------------------------------------
-resource "docker_image" "tovpn" {
-  name = "haugene/transmission-openvpn:5.5.2"
-}
-
-resource "docker_container" "tovpn" {
-  name       = "tovpn"
-  image      = docker_image.tovpn.image_id
-  restart    = "unless-stopped"
-  privileged = true
-
-  capabilities {
-    add = ["NET_ADMIN"]
-  }
-
-  networks_advanced {
-    name    = docker_network.proxy.id
-    aliases = ["tovpn"]
-  }
-
-  volumes {
-    volume_name    = docker_volume.tovpn_repo_nfs.name
-    container_path = "/data"
-  }
-  volumes {
-    host_path      = "${var.docker_mnt}/transmission/config"
-    container_path = "/config"
-  }
-
-  env = [
-    "PUID=${var.puid}",
-    "PGID=${var.pgid}",
-    "TZ=${var.timezone}",
-    "UMASK=002",
-    "OPENVPN_PROVIDER=NORDVPN",
-    "OPENVPN_CONFIG=",
-    "OPENVPN_USERNAME=${var.openvpn_username}",
-    "OPENVPN_PASSWORD=${var.openvpn_password}",
-    "LOCAL_NETWORK=192.168.100.0/24, 192.168.105.0/24",
-    "TRANSMISSION_WEB_HOME=/opt/transmission-ui/flood-for-transmission",
-  ]
-
-  log_driver = "json-file"
-  log_opts = {
-    "max-size" = "10m"
-  }
-
-  dynamic "labels" {
-    for_each = {
-      "traefik.enable"                                       = "true"
-      "traefik.http.routers.tovpn.rule"                      = "Host(`tovpn.local.uaccloud.com`)"
-      "traefik.http.routers.tovpn.entrypoints"               = "websecure"
-      "traefik.http.services.tovpn.loadbalancer.server.port" = "9091"
-      "traefik.http.routers.tovpn.tls"                       = "true"
-      "traefik.http.routers.tovpn.tls.certresolver"          = "cloudflare"
-    }
-    content {
-      label = labels.key
-      value = labels.value
-    }
-  }
-}
-
-# ---------------------------------------------------------------------------
 # Jellyfin – Media Server
 # ---------------------------------------------------------------------------
 resource "docker_image" "jellyfin" {
@@ -541,49 +476,115 @@ resource "docker_container" "houndarr" {
 # Maintainerr – Media Library Cleanup
 # ---------------------------------------------------------------------------
 resource "docker_image" "maintainerr" {
-name = "ghcr.io/maintainerr/maintainerr:latest"
+  name = "ghcr.io/maintainerr/maintainerr:latest"
 }
 
 resource "docker_container" "maintainerr" {
-name    = "maintainerr"
-image   = docker_image.maintainerr.image_id
-restart = "unless-stopped"
-user    = "1000:1000"
+  name    = "maintainerr"
+  image   = docker_image.maintainerr.image_id
+  restart = "unless-stopped"
+  user    = "1000:1000"
 
-networks_advanced {
-name    = docker_network.proxy.id
-aliases = ["maintainerr"]
+  networks_advanced {
+    name    = docker_network.proxy.id
+    aliases = ["maintainerr"]
   }
 
-env = [
-"TZ=${var.timezone}",
+  env = [
+    "TZ=${var.timezone}",
   ]
 
-volumes {
-host_path      = "${var.docker_mnt}/maintainerr/data"
-container_path = "/opt/data"
+  volumes {
+    host_path      = "${var.docker_mnt}/maintainerr/data"
+    container_path = "/opt/data"
   }
 
-healthcheck {
-test         = ["CMD", "/opt/app/healthcheck.sh"]
-interval     = "30s"
-timeout      = "5s"
-start_period = "40s"
-retries      = 3
+  healthcheck {
+    test         = ["CMD", "/opt/app/healthcheck.sh"]
+    interval     = "30s"
+    timeout      = "5s"
+    start_period = "40s"
+    retries      = 3
   }
 
-dynamic "labels" {
-for_each = {
-"traefik.enable"                                              = "true"
-"traefik.http.routers.maintainerr.rule"                       = "Host(`maintainerr.local.uaccloud.com`)"
-"traefik.http.routers.maintainerr.entrypoints"                = "websecure"
-"traefik.http.services.maintainerr.loadbalancer.server.port"  = "6246"
-"traefik.http.routers.maintainerr.tls"                        = "true"
-"traefik.http.routers.maintainerr.tls.certresolver"           = "cloudflare"
+  dynamic "labels" {
+    for_each = {
+      "traefik.enable"                                             = "true"
+      "traefik.http.routers.maintainerr.rule"                      = "Host(`maintainerr.local.uaccloud.com`)"
+      "traefik.http.routers.maintainerr.entrypoints"               = "websecure"
+      "traefik.http.services.maintainerr.loadbalancer.server.port" = "6246"
+      "traefik.http.routers.maintainerr.tls"                       = "true"
+      "traefik.http.routers.maintainerr.tls.certresolver"          = "cloudflare"
     }
-content {
-label = labels.key
-value = labels.value
+    content {
+      label = labels.key
+      value = labels.value
+    }
+  }
+}
+
+# ---------------------------------------------------------------------------
+# Transmission – Torrent Client (via OpenVPN)
+# ---------------------------------------------------------------------------
+resource "docker_image" "transmission" {
+  name = "haugene/transmission-openvpn:latest"
+}
+
+resource "docker_container" "transmission" {
+  name    = "transmission"
+  image   = docker_image.transmission.image_id
+  restart = "unless-stopped"
+
+  networks_advanced {
+    name    = docker_network.proxy.id
+    aliases = ["transmission"]
+  }
+
+  ports {
+    internal = 9091
+    external = 9091
+  }
+
+  capabilities {
+    add = ["NET_ADMIN"]
+  }
+
+  devices {
+    host_path = "/dev/net/tun"
+  }
+
+  env = [
+    "PUID=${var.puid}",
+    "PGID=${var.pgid}",
+    "TZ=${var.timezone}",
+    "OPENVPN_PROVIDER=NORDVPN",
+    "OPENVPN_USERNAME=${var.openvpn_username}",
+    "OPENVPN_PASSWORD=${var.openvpn_password}",
+    "OPENVPN_OPTS=--inactive 3600 --ping 10 --ping-exit 60",
+    "LOCAL_NETWORK=${var.local_network}",
+  ]
+
+  volumes {
+    host_path      = "${var.docker_mnt}/transmission/config"
+    container_path = "/config"
+  }
+  volumes {
+    volume_name    = docker_volume.tovpn_repo_nfs.name
+    container_path = "/data"
+  }
+
+  dynamic "labels" {
+    for_each = {
+      "traefik.enable"                                              = "true"
+      "traefik.http.routers.transmission.rule"                      = "Host(`transmission.local.uaccloud.com`)"
+      "traefik.http.routers.transmission.entrypoints"               = "websecure"
+      "traefik.http.services.transmission.loadbalancer.server.port" = "9091"
+      "traefik.http.routers.transmission.tls"                       = "true"
+      "traefik.http.routers.transmission.tls.certresolver"          = "cloudflare"
+    }
+    content {
+      label = labels.key
+      value = labels.value
     }
   }
 }
