@@ -527,7 +527,7 @@ resource "docker_container" "maintainerr" {
 # Transmission – Torrent Client (via OpenVPN)
 # ---------------------------------------------------------------------------
 resource "docker_image" "transmission" {
-  name = "haugene/transmission-openvpn:latest"
+  name = "haugene/transmission-openvpn:5.5.2"
 }
 
 resource "docker_container" "transmission" {
@@ -540,19 +540,18 @@ resource "docker_container" "transmission" {
     aliases = ["transmission"]
   }
 
-  ports {
-    internal = 9091
-    external = 9091
-  }
-
   capabilities {
     add = ["NET_ADMIN"]
   }
 
-  devices {
-    host_path = "/dev/net/tun"
-  }
+  # CREATE_TUN_DEVICE=true (image default) creates /dev/net/tun inside the
+  # container, so the host device does not need to be mounted.
 
+  # Traefik reverse-proxy access: the image pins all non-local traffic through
+  # the VPN tunnel, and the default RPC whitelist (127.0.0.1) rejects requests
+  # arriving via Traefik on the Docker bridge network. Whitelisting
+  # 172.18.0.0/16 covers the bridge subnet(s) of user-created networks, and
+  # RPC auth is enforced since access comes from the public internet.
   env = [
     "PUID=${var.puid}",
     "PGID=${var.pgid}",
@@ -562,6 +561,11 @@ resource "docker_container" "transmission" {
     "OPENVPN_PASSWORD=${var.openvpn_password}",
     "OPENVPN_OPTS=--inactive 3600 --ping 10 --ping-exit 60",
     "LOCAL_NETWORK=${var.local_network}",
+    "TRANSMISSION_RPC_AUTHENTICATION_REQUIRED=true",
+    "TRANSMISSION_RPC_USERNAME=${var.transmission_rpc_username}",
+    "TRANSMISSION_RPC_PASSWORD=${var.transmission_rpc_password}",
+    "TRANSMISSION_RPC_WHITELIST_ENABLED=true",
+    "TRANSMISSION_RPC_WHITELIST=192.168.100.0/24,172.18.0.0/16,127.0.0.1,::1",
   ]
 
   volumes {

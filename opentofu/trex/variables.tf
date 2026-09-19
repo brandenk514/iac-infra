@@ -60,15 +60,6 @@ variable "tovpn_repo_mnt" {
 }
 
 # ---------------------------------------------------------------------------
-# Cloudflared Tunnel
-# ---------------------------------------------------------------------------
-variable "cloudflared_token" {
-  description = "Cloudflare tunnel token"
-  type        = string
-  sensitive   = true
-}
-
-# ---------------------------------------------------------------------------
 # General
 # ---------------------------------------------------------------------------
 variable "timezone" {
@@ -136,6 +127,18 @@ variable "openvpn_username" {
 
 variable "openvpn_password" {
   description = "NordVPN service credential password"
+  type        = string
+  sensitive   = true
+}
+
+variable "transmission_rpc_username" {
+  description = "Transmission web UI / RPC username (access goes through Traefik, so auth is required)"
+  type        = string
+  sensitive   = true
+}
+
+variable "transmission_rpc_password" {
+  description = "Transmission web UI / RPC password"
   type        = string
   sensitive   = true
 }
