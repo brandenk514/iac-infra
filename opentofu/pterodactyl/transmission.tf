@@ -37,9 +37,10 @@ resource "docker_container" "transmission" {
   # CREATE_TUN_DEVICE=true (image default) creates /dev/net/tun inside the
   # container, so the host device does not need to be mounted.
 
-  # Direct (unproxied) access: RPC auth is still enforced, and the whitelist
-  # is kept to loopback (Docker's userland proxy forwards via 127.0.0.1),
-  # the LAN, and the Docker bridge range.
+  # Direct (unproxied) access: RPC auth is disabled — access is limited by
+  # the whitelist to loopback (Docker's userland proxy forwards via
+  # 127.0.0.1), the LAN, and the Docker bridge range. Clients like the
+  # Flood GUI connect without credentials.
   env = [
     "PUID=${var.puid}",
     "PGID=${var.pgid}",
@@ -49,9 +50,7 @@ resource "docker_container" "transmission" {
     "OPENVPN_PASSWORD=${var.openvpn_password}",
     "OPENVPN_OPTS=--inactive 3600 --ping 10 --ping-exit 60",
     "LOCAL_NETWORK=${var.local_network}",
-    "TRANSMISSION_RPC_AUTHENTICATION_REQUIRED=true",
-    "TRANSMISSION_RPC_USERNAME=${var.transmission_rpc_username}",
-    "TRANSMISSION_RPC_PASSWORD=${var.transmission_rpc_password}",
+    "TRANSMISSION_RPC_AUTHENTICATION_REQUIRED=false",
   ]
 
   volumes {
