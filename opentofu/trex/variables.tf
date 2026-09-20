@@ -41,12 +41,6 @@ variable "media_server" {
   default     = "192.168.105.4"
 }
 
-variable "local_network" {
-  description = "LAN CIDR that should bypass the VPN (transmission LOCAL_NETWORK)"
-  type        = string
-  default     = "192.168.105.0/24"
-}
-
 variable "media_library_mnt" {
   description = "NFS export path for the media library"
   type        = string
@@ -54,7 +48,7 @@ variable "media_library_mnt" {
 }
 
 variable "tovpn_repo_mnt" {
-  description = "Path to the transmission/VPN download directory"
+  description = "Path to the torrent download directory (used by the *arr stacks)"
   type        = string
   default     = ":/volume1/tovpn-repo"
 }
@@ -112,33 +106,6 @@ variable "traefik_dashboard_credentials" {
 
 variable "cf_dns_api_token" {
   description = "Cloudflare DNS API token for ACME certificate resolution"
-  type        = string
-  sensitive   = true
-}
-
-# ---------------------------------------------------------------------------
-# Transmission / OpenVPN
-# ---------------------------------------------------------------------------
-variable "openvpn_username" {
-  description = "NordVPN service credential username"
-  type        = string
-  sensitive   = true
-}
-
-variable "openvpn_password" {
-  description = "NordVPN service credential password"
-  type        = string
-  sensitive   = true
-}
-
-variable "transmission_rpc_username" {
-  description = "Transmission web UI / RPC username (access goes through Traefik, so auth is required)"
-  type        = string
-  sensitive   = true
-}
-
-variable "transmission_rpc_password" {
-  description = "Transmission web UI / RPC password"
   type        = string
   sensitive   = true
 }
