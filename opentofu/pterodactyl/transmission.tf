@@ -57,7 +57,7 @@ resource "docker_container" "transmission" {
     container_path = "/config"
   }
   volumes {
-    volume_name    = docker_volume.tovpn_repo_nfs.name
+    volume_name    = "/mnt/r5-dstor/dl-repo"
     container_path = "/data"
   }
 }
