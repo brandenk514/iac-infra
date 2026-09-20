@@ -38,7 +38,7 @@ variable "media_server" {
 variable "local_network" {
   description = "LAN CIDR that should bypass the VPN (transmission LOCAL_NETWORK)"
   type        = string
-  default     = "192.168.105.0/24"
+  default     = "192.168.105.0/24, 192.168.100.0/24"
 }
 
 variable "tovpn_repo_mnt" {

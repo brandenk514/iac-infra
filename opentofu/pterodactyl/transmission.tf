@@ -49,7 +49,6 @@ resource "docker_container" "transmission" {
     "OPENVPN_PASSWORD=${var.openvpn_password}",
     "OPENVPN_OPTS=--inactive 3600 --ping 10 --ping-exit 60",
     "LOCAL_NETWORK=${var.local_network}",
-    "TRANSMISSION_RPC_AUTHENTICATION_REQUIRED=true",
   ]
 
   volumes {
