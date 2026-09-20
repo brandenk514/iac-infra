@@ -7,10 +7,10 @@ resource "docker_image" "beszel_agent" {
 }
 
 resource "docker_container" "beszel_agent" {
-  name         = "beszel-agent"
-  image        = docker_image.beszel_agent.image_id
-  restart      = "unless-stopped"
-  network_mode = "host"
+  name          = "beszel-agent"
+  image         = docker_image.beszel_agent.image_id
+  restart       = "unless-stopped"
+  network_mode  = "host"
   security_opts = ["apparmor:unconfined"]
 
   volumes {

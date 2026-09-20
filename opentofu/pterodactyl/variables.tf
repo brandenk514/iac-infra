@@ -27,6 +27,27 @@ variable "docker_mnt" {
 }
 
 # ---------------------------------------------------------------------------
+# NFS / Downloads
+# ---------------------------------------------------------------------------
+variable "media_server" {
+  description = "IP address of the NFS media server"
+  type        = string
+  default     = "192.168.105.4"
+}
+
+variable "local_network" {
+  description = "LAN CIDR that should bypass the VPN (transmission LOCAL_NETWORK)"
+  type        = string
+  default     = "192.168.105.0/24"
+}
+
+variable "tovpn_repo_mnt" {
+  description = "Path to the transmission/VPN download directory"
+  type        = string
+  default     = ":/volume1/tovpn-repo"
+}
+
+# ---------------------------------------------------------------------------
 # General
 # ---------------------------------------------------------------------------
 variable "timezone" {
@@ -73,6 +94,33 @@ variable "beszel_agent_key" {
 
 variable "beszel_agent_token" {
   description = "Auth token for Beszel agent"
+  type        = string
+  sensitive   = true
+}
+
+# ---------------------------------------------------------------------------
+# Transmission / OpenVPN
+# ---------------------------------------------------------------------------
+variable "openvpn_username" {
+  description = "NordVPN service credential username"
+  type        = string
+  sensitive   = true
+}
+
+variable "openvpn_password" {
+  description = "NordVPN service credential password"
+  type        = string
+  sensitive   = true
+}
+
+variable "transmission_rpc_username" {
+  description = "Transmission web UI / RPC username (direct access, so auth is required)"
+  type        = string
+  sensitive   = true
+}
+
+variable "transmission_rpc_password" {
+  description = "Transmission web UI / RPC password"
   type        = string
   sensitive   = true
 }
