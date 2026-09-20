@@ -167,6 +167,36 @@ for _d in "${DEST_DIRS[@]}"; do
     DEST_SUMMARY+="${DEST_SUMMARY:+, }${_d}"
 done
 
+# Shared rsync options for every destination.
+#   --inplace          Write directly into the target file instead of temp file
+#                      + rename. On SMB/CIFS destinations the rename is an
+#                      expensive extra round-trip per file; big speedup.
+#                      Trade-off: an interrupted transfer leaves a partial
+#                      file (mitigated by --partial for resumable re-runs).
+#   --omit-dir-times   Don't re-set mtime on directories. With -a this would
+#                      issue a metadata call per directory on the network
+#                      destination even when nothing changed.
+#   --partial          Keep partially transferred files so a re-run resumes.
+#
+# NOTE on mtimes: if backup time stays high, run once with
+# `--checksum` instead of the default size+mtime quick check. If that is
+# dramatically faster, it means mtimes are unreliable (apps touching files,
+# SMB timestamp granularity) and you may want `--size-only` permanently —
+# but only if nothing in the volumes rewrites files in place without a size
+# change (databases do this), otherwise changed files get missed.
+RSYNC_OPTS=(
+    -aH
+    --delete
+    --no-owner --no-group
+    --partial
+    --inplace
+    --omit-dir-times
+    --stats
+)
+
+# Run all destination rsyncs in parallel (they are independent), then wait.
+rsync_fail=0
+declare -a pids=()
 for dest in "${DEST_DIRS[@]}"; do
     # If the destination is a mount path, make sure it's actually reachable.
     if [[ "${dest}" != nfs://* ]]; then
@@ -176,23 +206,34 @@ for dest in "${DEST_DIRS[@]}"; do
     fi
 
     log "Rsyncing ${SOURCE_DIR} -> ${dest}"
-    # shellcheck disable=SC2086
-    # -aH but NOT -A/-X (no ACLs/xattrs) and --no-owner/--no-group:
-    #   The backup destinations are CIFS/SMB (and the source is r5-dstor), which
-    #   reject chown/POSIX-ACL/setxattr even for root ("Operation not permitted").
-    #   -a implies -o/-g, so without the overrides every file fails chown and
-    #   rsync exits 23, tripping pipefail + the ERR trap. Exact uid/gid don't
-    #   matter for container volumes that will be restored onto a fresh host, so
-    #   let the destination assign ownership. Perms, times, symlinks, hardlinks
-    #   and file content are still preserved.
-    rsync -aH --delete --no-owner --no-group \
-        "${RSYNC_EXCLUDES[@]}" \
-        --stats \
-        "${SOURCE_DIR}" \
-        "${dest}" \
-        2>&1 | tee -a "${LOG_FILE}"
-    log "Rsync to ${dest} complete."
+    (
+        # shellcheck disable=SC2086
+        # -aH but NOT -A/-X (no ACLs/xattrs) and --no-owner/--no-group:
+        #   The backup destinations are CIFS/SMB (and the source is r5-dstor), which
+        #   reject chown/POSIX-ACL/setxattr even for root ("Operation not permitted").
+        #   -a implies -o/-g, so without the overrides every file fails chown and
+        #   rsync exits 23, tripping pipefail + the ERR trap. Exact uid/gid don't
+        #   matter for container volumes that will be restored onto a fresh host, so
+        #   let the destination assign ownership. Perms, times, symlinks, hardlinks
+        #   and file content are still preserved.
+        rsync "${RSYNC_OPTS[@]}" \
+            "${RSYNC_EXCLUDES[@]}" \
+            "${SOURCE_DIR}" \
+            "${dest}" \
+            2>&1 | tee -a "${LOG_FILE}"
+    ) &
+    pids+=("$!")
 done
+
+for i in "${!pids[@]}"; do
+    if wait "${pids[$i]}"; then
+        log "Rsync to ${DEST_DIRS[$i]} complete."
+    else
+        log "ERROR: rsync to ${DEST_DIRS[$i]} failed."
+        rsync_fail=1
+    fi
+done
+[[ "${rsync_fail}" -eq 0 ]] || die "One or more rsync runs failed"
 
 # ── 3. Restart the containers ────────────────────────────────────────────────
 if [[ "${RUNNING_COUNT}" -gt 0 ]]; then
