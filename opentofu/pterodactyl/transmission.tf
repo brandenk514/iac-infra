@@ -50,10 +50,6 @@ resource "docker_container" "transmission" {
     "OPENVPN_OPTS=--inactive 3600 --ping 10 --ping-exit 60",
     "LOCAL_NETWORK=${var.local_network}",
     "TRANSMISSION_RPC_AUTHENTICATION_REQUIRED=true",
-    "TRANSMISSION_RPC_USERNAME=${var.transmission_rpc_username}",
-    "TRANSMISSION_RPC_PASSWORD=${var.transmission_rpc_password}",
-    "TRANSMISSION_RPC_WHITELIST_ENABLED=true",
-    "TRANSMISSION_RPC_WHITELIST=${var.local_network},172.18.0.0/16,127.0.0.1,::1",
   ]
 
   volumes {
