@@ -112,3 +112,15 @@ variable "openvpn_password" {
   type        = string
   sensitive   = true
 }
+
+variable "transmission_rpc_username" {
+  description = "Transmission web UI / RPC username (direct access, so auth is required)"
+  type        = string
+  sensitive   = true
+}
+
+variable "transmission_rpc_password" {
+  description = "Transmission web UI / RPC password"
+  type        = string
+  sensitive   = true
+}
