@@ -177,7 +177,15 @@ for dest in "${DEST_DIRS[@]}"; do
 
     log "Rsyncing ${SOURCE_DIR} -> ${dest}"
     # shellcheck disable=SC2086
-    rsync -aHAX --delete \
+    # -aH but NOT -A/-X (no ACLs/xattrs) and --no-owner/--no-group:
+    #   The backup destinations are CIFS/SMB (and the source is r5-dstor), which
+    #   reject chown/POSIX-ACL/setxattr even for root ("Operation not permitted").
+    #   -a implies -o/-g, so without the overrides every file fails chown and
+    #   rsync exits 23, tripping pipefail + the ERR trap. Exact uid/gid don't
+    #   matter for container volumes that will be restored onto a fresh host, so
+    #   let the destination assign ownership. Perms, times, symlinks, hardlinks
+    #   and file content are still preserved.
+    rsync -aH --delete --no-owner --no-group \
         "${RSYNC_EXCLUDES[@]}" \
         --stats \
         "${SOURCE_DIR}" \
