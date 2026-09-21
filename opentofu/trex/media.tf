@@ -19,6 +19,7 @@ resource "docker_container" "prowlarr" {
     "PUID=${var.puid}",
     "PGID=${var.pgid}",
     "TZ=${var.timezone}",
+    "DOTNET_SYSTEM_NET_HTTP_USEIPV4=1",
   ]
 
   volumes {
