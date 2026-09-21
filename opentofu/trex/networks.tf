@@ -25,17 +25,6 @@ resource "docker_volume" "media_library_nfs" {
   }
 }
 
-resource "docker_volume" "tovpn_repo_nfs" {
-  name   = "tovpn_repo_nfs"
-  driver = "local"
-
-  driver_opts = {
-    type   = "nfs4"
-    o      = "addr=${var.media_server},rw"
-    device = var.tovpn_repo_mnt
-  }
-}
-
 resource "docker_volume" "tv_nfs" {
   name   = "tv_nfs"
   driver = "local"
