@@ -6,9 +6,9 @@
 #                 books, movies, music, tv) and prune the now-empty torrent
 #                 folders left behind.
 #
-# Separately, when the Transmission "incomplete" dir (in-progress downloads)
-# grows past INCOMPLETE_MAX_GB, old files inside it are also deleted —
-# regardless of overall disk usage.
+# The Transmission "incomplete" dir (in-progress downloads) is NEVER touched —
+# deleting files there would corrupt active torrents. It is only excluded
+# from category cleanup.
 #
 # Sends a Discord notification on success or failure. No-op runs (usage below
 # the threshold) exit silently — this script is meant to run frequently
@@ -36,8 +36,7 @@
 #   CATEGORIES      Category subdirs (default "books movies music tv");
 #                   any other subdir present in DOWNLOADS_DIR is also cleaned
 #   INCOMPLETE_DIR  Transmission "incomplete" dir (default $DISK_PATH/incomplete)
-#   INCOMPLETE_MAX_GB  Clean the incomplete dir when larger than this, in GiB
-#                      (default 100)
+#                   — never cleaned, only excluded from category cleanup
 #   LOG_FILE        Log destination (default /var/log/clean-disk.log)
 #   DISCORD_WEBHOOK_URL   Discord webhook (unset = notifications skipped)
 # ==============================================================================
@@ -56,7 +55,6 @@ THRESHOLD="${THRESHOLD:-90}"
 MIN_AGE_HOURS="${MIN_AGE_HOURS:-24}"
 CATEGORIES="${CATEGORIES:-books movies music tv}"
 INCOMPLETE_DIR="${INCOMPLETE_DIR:-${DISK_PATH}/incomplete}"
-INCOMPLETE_MAX_GB="${INCOMPLETE_MAX_GB:-100}"
 LOG_FILE="${LOG_FILE:-/var/log/clean-disk.log}"
 
 # Discord webhook (set here or export DISCORD_WEBHOOK_URL before running)
@@ -150,48 +148,9 @@ human_bytes() {
     fi
 }
 
-# Incomplete-dir cleanup — runs on every invocation, independent of the disk
-# threshold. Trigger: dir size > INCOMPLETE_MAX_GB. Deletes files older than
-# MIN_AGE_HOURS (in-progress but stalled torrents) and prunes empty subdirs.
-INCOMPLETE_TRIGGERED=0
-INCOMPLETE_DELETED=0
-INCOMPLETE_BEFORE_HUMAN=""
-INCOMPLETE_AFTER_HUMAN=""
-
-clean_incomplete_dir() {
-    if [[ ! -d "${INCOMPLETE_DIR}" ]]; then
-        log "Incomplete dir not found: ${INCOMPLETE_DIR} — skipping."
-        return 0
-    fi
-
-    local bytes_now max_bytes
-    bytes_now="$(du -sb "${INCOMPLETE_DIR}" | awk '{print $1}')"
-    max_bytes=$(( INCOMPLETE_MAX_GB * 1073741824 ))
-
-    if (( bytes_now < max_bytes )); then
-        log "Incomplete dir is $(human_bytes "${bytes_now}") (limit ${INCOMPLETE_MAX_GB} GiB) — nothing to do."
-        return 0
-    fi
-
-    INCOMPLETE_TRIGGERED=1
-    INCOMPLETE_BEFORE_HUMAN="$(human_bytes "${bytes_now}")"
-    log "Incomplete dir is ${INCOMPLETE_BEFORE_HUMAN} (limit ${INCOMPLETE_MAX_GB} GiB) — deleting files older than ${MIN_AGE_HOURS}h"
-
-    local n bytes_after
-    n="$(find "${INCOMPLETE_DIR}" -mindepth 1 -type f -mmin +"${MIN_AGE_MINUTES}" -delete -print | wc -l | tr -d '[:space:]')"
-    find "${INCOMPLETE_DIR}" -mindepth 1 -type d -empty -delete
-    INCOMPLETE_DELETED="${n}"
-
-    bytes_after="$(du -sb "${INCOMPLETE_DIR}" | awk '{print $1}')"
-    (( bytes_after > bytes_now )) && bytes_after="${bytes_now}"
-    INCOMPLETE_AFTER_HUMAN="$(human_bytes "${bytes_after}")"
-    log "  incomplete: deleted ${n} file(s), dir is now ${INCOMPLETE_AFTER_HUMAN}"
-}
-
 # ── Validate configuration ───────────────────────────────────────────────────
 [[ "${THRESHOLD}" =~ ^[0-9]+$ ]] || die "THRESHOLD must be a whole number (got: ${THRESHOLD})"
 [[ "${MIN_AGE_HOURS}" =~ ^[0-9]+$ ]] || die "MIN_AGE_HOURS must be a whole number (got: ${MIN_AGE_HOURS})"
-[[ "${INCOMPLETE_MAX_GB}" =~ ^[0-9]+$ ]] || die "INCOMPLETE_MAX_GB must be a whole number (got: ${INCOMPLETE_MAX_GB})"
 
 command -v df   >/dev/null 2>&1 || die "'df' not found in PATH"
 command -v find >/dev/null 2>&1 || die "'find' not found in PATH"
@@ -205,14 +164,8 @@ log "Disk usage at ${DISK_PATH}: ${USAGE_BEFORE}% (threshold: ${THRESHOLD}%)"
 
 MIN_AGE_MINUTES=$(( MIN_AGE_HOURS * 60 ))
 
-# ── 2. Incomplete dir (runs even below the disk threshold) ─────────────────
-clean_incomplete_dir
-
 if [[ "${USAGE_BEFORE}" -lt "${THRESHOLD}" ]]; then
     log "Below threshold — nothing to do in the downloads dir."
-    if [[ "${INCOMPLETE_TRIGGERED}" -eq 1 ]]; then
-        notify_discord "success" "Incomplete dir \`${INCOMPLETE_DIR}\` was ${INCOMPLETE_BEFORE_HUMAN} (limit ${INCOMPLETE_MAX_GB} GiB) — deleted **${INCOMPLETE_DELETED}** file(s) older than ${MIN_AGE_HOURS}h, now ${INCOMPLETE_AFTER_HUMAN}. Disk usage: **${USAGE_BEFORE}%** (below the ${THRESHOLD}% threshold)."
-    fi
     # Clean path — don't let the ERR trap fire on exit.
     trap - ERR
     exit 0
@@ -228,8 +181,8 @@ CATEGORIES_CLEAN=()
 CAT_SEEN=""
 add_category() {
     local base="${1}"
-    # The incomplete dir has its own 100 GiB-triggered cleanup — exclude it
-    # from the threshold-driven category cleanup.
+    # The incomplete dir holds in-progress downloads — deleting from it would
+    # corrupt active Transmission torrents, so it is never cleaned.
     if [[ "$(basename "${INCOMPLETE_DIR}")" == "${base}" ]]; then return 0; fi
     case " ${CAT_SEEN} " in *" ${base} "*) return 0 ;; esac
     if [[ ! -d "${DOWNLOADS_DIR}/${base}" ]]; then return 0; fi
@@ -273,7 +226,7 @@ USAGE_AFTER="$(disk_usage_pct "${DISK_PATH}")"
 log "Done. Files deleted: ${TOTAL_FILES}. Space freed: ${FREED_HUMAN}. Usage: ${USAGE_BEFORE}% → ${USAGE_AFTER}%"
 
 # ── 5. Notify ────────────────────────────────────────────────────────────────
-if [[ "${TOTAL_FILES}" -eq 0 && "${INCOMPLETE_TRIGGERED}" -eq 0 ]]; then
+if [[ "${TOTAL_FILES}" -eq 0 ]]; then
     # Disk is over the threshold but there was nothing eligible to delete —
     # the space is being used by something else. That needs attention.
     notify_discord "failure" "Disk usage reached **${USAGE_BEFORE}%** (threshold ${THRESHOLD}%) but **no files** were eligible for deletion (min age ${MIN_AGE_HOURS}h). The space is used by something else — manual investigation needed. Log: \`${LOG_FILE}\`"
@@ -287,9 +240,6 @@ if [[ "${TOTAL_FILES}" -gt 0 ]]; then
     if [[ "${STRAY_OLD}" -gt 0 ]]; then
         description="${description} Note: **${STRAY_OLD}** old file(s) sit directly in the downloads root (no category dir) and were left untouched."
     fi
-fi
-if [[ "${INCOMPLETE_TRIGGERED}" -eq 1 ]]; then
-    description="${description:+${description} }Also cleaned the incomplete dir \`${INCOMPLETE_DIR}\` (${INCOMPLETE_BEFORE_HUMAN}, limit ${INCOMPLETE_MAX_GB} GiB) — deleted **${INCOMPLETE_DELETED}** file(s) older than ${MIN_AGE_HOURS}h, now ${INCOMPLETE_AFTER_HUMAN}."
 fi
 description="${description} Disk usage: **${USAGE_BEFORE}% → ${USAGE_AFTER}%**."
 notify_discord "success" "${description}"
