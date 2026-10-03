@@ -1,12 +1,14 @@
 # ---------------------------------------------------------------------------
-# Beszel Agent – Monitoring Agent (NVIDIA GPU)
+# Beszel Agent – Monitoring Agent (Intel GPU)
 # Reports to the central Beszel hub running in the main stack.
 # ---------------------------------------------------------------------------
-# The -alpine variant bundles smartmontools (smartctl) + zfs. The default
-# scratch image ships neither, so SMART disk-health data would never be
-# collected. The agent finds smartctl via exec.LookPath on the container PATH.
+# The -intel variant bundles igt-gpu-tools (intel_gpu_top) for Intel GPU
+# metrics, plus smartmontools (smartctl) + zfs. The default scratch image
+# ships none of these, so GPU usage and SMART disk-health data would never be
+# collected. The agent finds intel_gpu_top / smartctl via exec.LookPath on the
+# container PATH. Note: this image is amd64-only.
 resource "docker_image" "beszel_agent" {
-  name = "henrygd/beszel-agent:0.21.0-alpine"
+  name = "henrygd/beszel-agent-intel:0.21.0"
 }
 
 resource "docker_container" "beszel_agent" {
@@ -53,9 +55,10 @@ resource "docker_container" "beszel_agent" {
   ]
 
   # SYS_RAWIO / SYS_ADMIN: SMART data via smartctl
-  # (No GPU on this host — the NVIDIA/RTX 5070 stack lives on trex.)
+  # PERFMON: intel_gpu_top reads the Intel GPU's performance counters
+  # (perf_event_open) to report usage / power draw.
   capabilities {
-    add = ["SYS_RAWIO", "SYS_ADMIN"]
+    add = ["SYS_RAWIO", "SYS_ADMIN", "PERFMON"]
   }
 
   devices {
@@ -65,6 +68,11 @@ resource "docker_container" "beszel_agent" {
   devices {
     host_path      = "/dev/sda1"
     container_path = "/dev/sda1"
+  }
+  # Intel GPU: expose the DRM render nodes so intel_gpu_top can attach.
+  devices {
+    host_path      = "/dev/dri"
+    container_path = "/dev/dri"
   }
 }
 
