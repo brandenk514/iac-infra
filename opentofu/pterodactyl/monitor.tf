@@ -42,12 +42,12 @@ resource "docker_container" "beszel_agent" {
   }
 
   devices {
-    host_path      = "/dev/nvme0"
-    container_path = "/dev/nvme0"
+    host_path      = "/dev/nvme0n1"
+    container_path = "/dev/nvme0n1"
   }
   devices {
-    host_path      = "/dev/sda"
-    container_path = "/dev/sda"
+    host_path      = "/dev/sda1"
+    container_path = "/dev/sda1"
   }
 }
 
