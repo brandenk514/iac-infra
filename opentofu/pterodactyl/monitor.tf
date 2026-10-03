@@ -2,8 +2,11 @@
 # Beszel Agent – Monitoring Agent (NVIDIA GPU)
 # Reports to the central Beszel hub running in the main stack.
 # ---------------------------------------------------------------------------
+# The -alpine variant bundles smartmontools (smartctl) + zfs. The default
+# scratch image ships neither, so SMART disk-health data would never be
+# collected. The agent finds smartctl via exec.LookPath on the container PATH.
 resource "docker_image" "beszel_agent" {
-  name = "henrygd/beszel-agent:0.21.0"
+  name = "henrygd/beszel-agent:0.21.0-alpine"
 }
 
 resource "docker_container" "beszel_agent" {
@@ -25,6 +28,20 @@ resource "docker_container" "beszel_agent" {
   volumes {
     host_path      = "/var/run/dbus/system_bus_socket"
     container_path = "/var/run/dbus/system_bus_socket"
+    read_only      = true
+  }
+
+  # Expose the host's /mnt/r5-dstor (backed by /dev/sda1) to the agent. The
+  # agent runs in a container and can't see host mounts otherwise, so sda would
+  # never appear in Beszel. Mounting it under /extra-filesystems lets the agent
+  # auto-discover it. The folder name follows Beszel's device__customname
+  # convention: "sda1" is the device and "sda" is the custom display name. The
+  # bind mount shows up in the container's mountinfo as /dev/sda1, so the agent
+  # registers it with I/O key "sda1" (an exact /proc/diskstats match) and
+  # display name "sda".
+  volumes {
+    host_path      = "/mnt/r5-dstor"
+    container_path = "/extra-filesystems/sda1__sda"
     read_only      = true
   }
 
