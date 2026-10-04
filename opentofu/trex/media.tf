@@ -229,7 +229,7 @@ resource "docker_container" "jellyfin" {
   entrypoint = [
     "/bin/bash",
     "-c",
-    "dpkg -s libgomp1 > /dev/null 2>&1 || (apt-get update -qq && apt-get install -y -qq --no-install-recommends libgomp1 libvulkan1 > /dev/null 2>&1 && rm -rf /var/lib/apt/lists/*); exec /init",
+    "dpkg -s libgomp1 > /dev/null 2>&1 || (apt-get update -qq && apt-get install -y -qq --no-install-recommends libgomp1 libvulkan1 xz-utils> /dev/null 2>&1 && rm -rf /var/lib/apt/lists/*); exec /init",
   ]
 
   networks_advanced {
