@@ -219,8 +219,18 @@ resource "docker_container" "jellyfin" {
   image   = docker_image.jellyfin.image_id
   restart = "unless-stopped"
 
-  # NVIDIA GPU (RTX 5070) via nvidia-container-toolkit — NVENC transcoding
+  # NVIDIA GPU (RTX 5070) via nvidia-container-toolkit — NVENC transcoding + Vulkan (whisper-subs)
   gpus = "all"
+
+  # Install libgomp1 + libvulkan1 (required by the whisper-subs Vulkan variant),
+  # then hand off to s6-overlay's /init so DOCKER_MODS, lsiown, device-perm
+  # fixing and service management all run as normal. The rootfs is ephemeral,
+  # so this re-runs on every container start.
+  entrypoint = [
+    "/bin/bash",
+    "-c",
+    "dpkg -s libgomp1 > /dev/null 2>&1 || (apt-get update -qq && apt-get install -y -qq --no-install-recommends libgomp1 libvulkan1 > /dev/null 2>&1 && rm -rf /var/lib/apt/lists/*); exec /init",
+  ]
 
   networks_advanced {
     name    = docker_network.proxy.id
@@ -231,8 +241,12 @@ resource "docker_container" "jellyfin" {
     "PUID=${var.puid}",
     "PGID=${var.pgid}",
     "TZ=${var.timezone}",
-    "JELLYFIN_PublishedServerUrl=https://watch.uaccloud.com",
-    "DOCKER_MODS=linuxserver/mods:jellyfin-opencl",
+    "JELLYFIN_PublishedServerUrl=https://flix.uaccloud.com",
+    # "graphics" is required for the NVIDIA Container Toolkit to inject the
+    # Vulkan driver (nvidia_icd.json) into the container. Without it,
+    # whisper-cli will fall back to CPU even though nvidia-smi works.
+    # "video" (NVENC/NVDEC transcoding) is preserved from the image default.
+    "NVIDIA_DRIVER_CAPABILITIES=compute,video,utility,graphics",
   ]
 
   volumes {
