@@ -211,7 +211,7 @@ resource "docker_container" "lidarr" {
 # Jellyfin – Media Server
 # ---------------------------------------------------------------------------
 resource "docker_image" "jellyfin" {
-  name = "lscr.io/linuxserver/jellyfin:12.1ubu2604-ls50"
+  name = "lscr.io/linuxserver/jellyfin:12.2ubu2604-ls52"
 }
 
 resource "docker_container" "jellyfin" {
