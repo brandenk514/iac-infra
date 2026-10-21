@@ -110,7 +110,7 @@ variable "cf_dns_api_token" {
 variable "immich_version" {
   description = "Immich image tag"
   type        = string
-  default     = "v3.3.1"
+  default     = "v3.3.4"
 }
 
 variable "db_password" {
