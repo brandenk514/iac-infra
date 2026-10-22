@@ -8,7 +8,7 @@
 # collected. The agent finds intel_gpu_top / smartctl via exec.LookPath on the
 # container PATH. Note: this image is amd64-only.
 resource "docker_image" "beszel_agent" {
-  name = "henrygd/beszel-agent-intel:0.21.0"
+  name = "henrygd/beszel-agent-intel:0.21.1"
 }
 
 resource "docker_container" "beszel_agent" {
