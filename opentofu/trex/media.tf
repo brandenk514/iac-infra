@@ -159,7 +159,7 @@ resource "docker_container" "radarr" {
 # Lidarr – Music
 # ---------------------------------------------------------------------------
 resource "docker_image" "lidarr" {
-  name = "linuxserver/lidarr:3.1.0.4875-ls41"
+  name = "linuxserver/lidarr:3.1.6.5079-ls46"
 }
 
 resource "docker_container" "lidarr" {
