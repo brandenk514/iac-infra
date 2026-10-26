@@ -2,7 +2,7 @@
 # Tdarr Server + Internal Node – Transcode Automation
 # ---------------------------------------------------------------------------
 resource "docker_image" "tdarr" {
-  name = "ghcr.io/haveagitgat/tdarr:3.02.00"
+  name = "ghcr.io/haveagitgat/tdarr:3.03.00"
 }
 
 resource "docker_container" "tdarr" {
