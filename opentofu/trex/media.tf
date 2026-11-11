@@ -194,7 +194,7 @@ resource "docker_container" "lidarr" {
   dynamic "labels" {
     for_each = {
       "traefik.enable"                                        = "true"
-      "traefik.http.routers.lidarr.rule"                      = "Host(`lidarr.local.uaccloud.com`)"
+      "traefik.http.routers.lidarr.rule"                      = "Host(`liar.local.uaccloud.com`)"
       "traefik.http.routers.lidarr.entrypoints"               = "websecure"
       "traefik.http.services.lidarr.loadbalancer.server.port" = "8686"
       "traefik.http.routers.lidarr.tls"                       = "true"
