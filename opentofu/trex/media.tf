@@ -298,7 +298,7 @@ resource "docker_container" "jellyfin" {
 # Seerr – Media Requests (successor to Jellyseerr)
 # ---------------------------------------------------------------------------
 resource "docker_image" "seerr" {
-  name = "ghcr.io/seerr-team/seerr:v3.5.1"
+  name = "ghcr.io/seerr-team/seerr:v3.5.2"
 }
 
 resource "docker_container" "seerr" {
