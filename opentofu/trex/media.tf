@@ -2,7 +2,7 @@
 # Prowlarr – Indexer Manager
 # ---------------------------------------------------------------------------
 resource "docker_image" "prowlarr" {
-  name = "linuxserver/prowlarr:2.7.0.5723-ls166"
+  name = "linuxserver/prowlarr:3.0.2.5780-ls169"
 }
 
 resource "docker_container" "prowlarr" {
