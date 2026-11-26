@@ -447,7 +447,7 @@ resource "docker_container" "lazylibrarian" {
 # Houndarr – Media Tracker
 # ---------------------------------------------------------------------------
 resource "docker_image" "houndarr" {
-  name = "ghcr.io/av1155/houndarr:v1.13.3"
+  name = "ghcr.io/av1155/houndarr:v1.13.4"
 }
 
 resource "docker_container" "houndarr" {
